@@ -1,7 +1,1 @@
-{
-    "name": "QWERTY",
-    "layout": "qwertyuiopasdfgjkl;'zxcvbnm,./",
-    "efficiency": 0,
-    "last_analysis": "none",
-    "dataset_names": []
-}
+{"name": "QWERTY", "layout": "qwertyuiopasdfgjkl;'zxcvbnm,./", "total_distance": 8, "total_words": 8, "total_chars": 8, "efficiency": 1.0, "last_analysis": "2022-10-03-13:01:03", "dataset_names": ["coca-samples-db.zip/db_news.txt", "coca-samples-db.zip/db_spok.txt", "coca-samples-db.zip/db_tvm.txt", "coca-samples-db.zip/db_web.txt", "coca-samples-db.zip/db_acad.txt", "coca-samples-db.zip/db_blog.txt", "coca-samples-db.zip/db_fic.txt", "coca-samples-db.zip/db_mag.txt"]}

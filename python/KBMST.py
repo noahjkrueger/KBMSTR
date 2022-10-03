@@ -2,19 +2,67 @@ import argparse
 import sys
 import json
 import eel
+import os
+from zipfile import ZipFile
+from datetime import datetime
 
 
-def analyze_keyboard(keyboard_json, datasets):
-    pass
+def calc_distance(key_a, key_b):
+    # finger on key
+    if key_a == key_b:
+        return 0.0
+    # top row transitions TODO
+    elif 0 < key_a < 10:
+        if key_b < 4:
+            return 1.1
+        elif 5 < key_a < 10:
+            return
 
 
-def loadJSONtoHTML(keyboard):
+def measuere_agianst_dataset(keyboard_layout, dataset):
+    dist, words, chars = 0, 0, 0
+    return dist, words, chars
+
+
+def analyze_keyboard(keyboard, datasets):
+    zips = []
+    for root, direct, files in os.walk(datasets):
+        for file in files:
+            if '.zip' in file:
+                zips.append(os.path.join(root, file))
+    total_distance = 0
+    total_words = 0
+    total_chars = 0
+    dataset_names = []
+    for zip_path in zips:
+        with ZipFile(zip_path, 'r') as zipObj:
+            for file in zipObj.namelist():
+                if file[-4:] == ".txt":
+                    dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
+                    with zipObj.open(file) as dataset:
+                        dist, words, chars = measuere_agianst_dataset(keyboard['layout'], dataset)
+                        total_distance += dist
+                        total_words += words
+                        total_chars += chars
+    keyboard['total_distance'] = total_distance
+    keyboard['total_words'] = total_words
+    keyboard['total_chars'] = total_chars
+    if total_distance == 0 or total_words == 0 or total_chars == 0:
+        keyboard['efficiency'] = 0
+    else:
+        keyboard['efficiency'] = 2 / ((total_distance / total_words) + (total_distance / total_chars))
+    keyboard['dataset_names'] = dataset_names
+    keyboard['last_analysis'] = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    return keyboard
+
+
+def load_json_to_html(keyboard):
     eel.read_data(keyboard.split("/")[1])
 
 
 def show_keyboards(keyboard):
     eel.init('keyboards')
-    loadJSONtoHTML(keyboard)
+    load_json_to_html(keyboard)
     eel.start('index.html', mode='chrome-app', port=8080, cmdline_args=['--start-fullscreen'])
 
 
@@ -35,7 +83,9 @@ def main(argv):
         metavar="DATASET",
         type=str,
         default="",
-        help="A single or a collection (directory) of datasets to be used in the generation."
+        help="A single or a collection of (.zip) of datasets (.txt) to be used in the generation. Enter a directory "
+             "or a single .zip compressed file. Only .txt files within a .zip file are used to rank the keyboards. "
+             "Directories of multiple .zip collections are allowed. "
     )
     parser.add_argument(
         "-result_type",
@@ -52,7 +102,7 @@ def main(argv):
         type=str,
         default="",
         help="Name the keyboard being generated. (.raw/.simplified) are added with respect to result_type. Default "
-             "naming scheme: mm/dd/yyy:hh:mm:ss.(raw/simplified)"
+             "naming scheme: yyyy/mm/dd:hh:mm:ss.(raw/simplified)"
     )
     parser.add_argument(
         "-gen_size",
@@ -76,8 +126,8 @@ def main(argv):
     parser.add_argument(
         "-analyze",
         action="store_true",
-        help="Analyze the efficiency of the inputted keyboard against dataset and places results in /keyboards. "
-             "Ignores all other options."
+        help="Analyze the efficiency of the inputted keyboard against dataset(s) provided in -dataset and places "
+             "results in /keyboards. Ignores all other options."
     )
     parser.add_argument(
         "-display",
@@ -91,10 +141,12 @@ def main(argv):
         show_keyboards(args.keyboard)
         exit()
 
-    with open(args.keyboard) as json_file:
-        keyboard_json = json.load(json_file)
+    with open(args.keyboard, "r") as json_file:
+        keyboard = json.load(json_file)
     if args.analyze:
-        analyze_keyboard(keyboard_json, args.dataset)
+        keyboard = analyze_keyboard(keyboard, args.dataset)
+    with open(args.keyboard, "w") as json_file:
+        json.dump(keyboard, json_file)
 
 
 if __name__ == "__main__":
