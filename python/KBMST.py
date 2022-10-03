@@ -20,8 +20,8 @@ def show_keyboards(keyboard):
 
 def main(argv):
     parser = argparse.ArgumentParser(
-        prog="python3 findkeyboard.py",
-        description="Find the best keyboard for an input dataset using a genetic algorithm.",
+        prog="python3 KBMST.py",
+        description="KBMSTR: Keyboard Master - Find the best keyboard for an input dataset using a genetic algorithm.",
         prefix_chars="-",
         epilog="Generates a 31 key keyboard, see https://github.com/noahjkrueger/Keyboard-Layout for more info."
     )
