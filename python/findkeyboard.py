@@ -1,15 +1,21 @@
 import argparse
 import sys
-import time
 import json
+import eel
 
 
-def analyze_keyboard(keyboard, datasets):
+def analyze_keyboard(keyboard_json, datasets):
     pass
 
 
-def show_keyboard(keyboard):
-    pass
+def loadJSONtoHTML(keyboard):
+    eel.read_data(keyboard.split("/")[1])
+
+
+def show_keyboards(keyboard):
+    eel.init('keyboards')
+    loadJSONtoHTML(keyboard)
+    eel.start('index.html', mode='chrome-app', port=8080, cmdline_args=['--start-fullscreen'])
 
 
 def main(argv):
@@ -81,10 +87,14 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
+    if args.display:
+        show_keyboards(args.keyboard)
+        exit()
+
+    with open(args.keyboard) as json_file:
+        keyboard_json = json.load(json_file)
     if args.analyze:
-        analyze_keyboard(args.keyboard, args.dataset)
-    elif args.display:
-        show_keyboard(args.keyboard)
+        analyze_keyboard(keyboard_json, args.dataset)
 
 
 if __name__ == "__main__":

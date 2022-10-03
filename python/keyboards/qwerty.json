@@ -1,6 +1,7 @@
 {
+    "name": "QWERTY",
     "layout": "qwertyuiopasdfgjkl;'zxcvbnm,./",
     "efficiency": 0,
     "last_analysis": "none",
-    "dataset_names": "none",
+    "dataset_names": []
 }
