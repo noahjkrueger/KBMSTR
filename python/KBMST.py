@@ -8,20 +8,68 @@ from datetime import datetime
 
 
 def calc_distance(key_a, key_b):
-    # finger on key
+    transition = key_a, key_b
+    transition_i = key_b, key_a
+    a, b, c, d, e, f, g, h, i, r = 1.0, 1.1, 1.2, 1.3, 1.5, 2.0, 2.3, 2.5, 2.75, 0.0
     if key_a == key_b:
-        return 0.0
-    # top row transitions TODO
-    elif 0 < key_a < 10:
-        if key_b < 4:
-            return 1.1
-        elif 5 < key_a < 10:
-            return
+        return r
+    a_trans = {(3, 4), (23, 24), (24, 25), (5, 6), (26, 27), (19, 20)}
+    if transition in a_trans or transition_i in a_trans:
+        return a
+    b_trans = {(0, 10), (1, 11), (2, 12), (3, 13), (4, 14), (6, 16), (7, 17), (8, 18), (9, 19)}
+    if transition in b_trans or transition_i in b_trans:
+        return b
+    c_trans = {(11, 21), (12, 22), (13, 23), (13, 24), (15, 26), (16, 26), (16, 27),
+               (17, 28), (18, 29), (19, 30), (20, 30)}
+    if transition in c_trans or transition_i in c_trans:
+        return c
+    if transition == (4, 13) or transition_i == (4, 13):
+        return d
+    e_trans = {(13, 25), (9, 20), (3, 14)}
+    if transition in e_trans or transition_i in e_trans:
+        return e
+    f_trans = {(1, 21), (2, 22), (3, 23), (4, 24), (6, 26)}
+    if transition in f_trans or transition_i in f_trans:
+        return f
+    g_trans = {(3, 24), (4, 25), (5, 26), (6, 27), (9, 30)}
+    if transition in g_trans or transition_i in g_trans:
+        return g
+    h_trans = {(4, 23), (5, 27)}
+    if transition in h_trans or transition_i in h_trans:
+        return h
+    if transition == (3, 25) or transition_i == (2, 25):
+        return i
+    return -1
 
 
-def measuere_agianst_dataset(keyboard_layout, dataset):
-    dist, words, chars = 0, 0, 0
-    return dist, words, chars
+def measure_vs_dataset(keyboard_mapping, dataset):
+    dist, words, chars, uncounted = 0, 0, 0, 0
+    finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_p": 16, "r_r": 17, "r_m": 18, "r_i": 19}
+    while line := dataset.readline():
+        tokens = line.decode()[:-1].lower().split(" ")
+        words += len(tokens)
+        for token in tokens:
+            for char in token:
+                chars += 1
+                if char in keyboard_mapping.keys():
+                    trans_dest = keyboard_mapping[char]
+                    for finger in finger_pos:
+                        if result := calc_distance(finger_pos[finger], trans_dest) != -1:
+                            dist += result
+                            finger_pos[finger] = trans_dest
+                            break
+                else:
+                    uncounted += 1
+    return dist, words, chars, uncounted
+
+
+def get_keyboard_map(keyboard_layout):
+    i = 0
+    keyboard_mapping = {}
+    for char in keyboard_layout:
+        keyboard_mapping[char] = i
+        i += 1
+    return keyboard_mapping
 
 
 def analyze_keyboard(keyboard, datasets):
@@ -30,23 +78,23 @@ def analyze_keyboard(keyboard, datasets):
         for file in files:
             if '.zip' in file:
                 zips.append(os.path.join(root, file))
-    total_distance = 0
-    total_words = 0
-    total_chars = 0
-    dataset_names = []
+    total_distance, total_words, total_chars, total_uncounted, dataset_names = 0, 0, 0, 0, []
     for zip_path in zips:
         with ZipFile(zip_path, 'r') as zipObj:
             for file in zipObj.namelist():
-                if file[-4:] == ".txt":
+                if '.txt' in file:
                     dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
                     with zipObj.open(file) as dataset:
-                        dist, words, chars = measuere_agianst_dataset(keyboard['layout'], dataset)
+                        dist, words, chars, uncounted = measure_vs_dataset(get_keyboard_map(keyboard['layout']),
+                                                                           dataset)
                         total_distance += dist
                         total_words += words
                         total_chars += chars
+                        total_uncounted += uncounted
     keyboard['total_distance'] = total_distance
     keyboard['total_words'] = total_words
     keyboard['total_chars'] = total_chars
+    keyboard['total_uncounted'] = total_uncounted
     if total_distance == 0 or total_words == 0 or total_chars == 0:
         keyboard['efficiency'] = 0
     else:
