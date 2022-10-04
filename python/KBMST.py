@@ -7,69 +7,62 @@ from zipfile import ZipFile
 from datetime import datetime
 
 
-def calc_distance(key_a, key_b):
-    transition = key_a, key_b
-    transition_i = key_b, key_a
-    a, b, c, d, e, f, g, h, i, r = 1.0, 1.1, 1.2, 1.3, 1.5, 2.0, 2.3, 2.5, 2.75, 0.0
-    if key_a == key_b:
-        return r
-    a_trans = {(3, 4), (23, 24), (24, 25), (5, 6), (26, 27), (19, 20)}
-    if transition in a_trans or transition_i in a_trans:
-        return a
-    b_trans = {(0, 10), (1, 11), (2, 12), (3, 13), (4, 14), (6, 16), (7, 17), (8, 18), (9, 19)}
-    if transition in b_trans or transition_i in b_trans:
-        return b
-    c_trans = {(11, 21), (12, 22), (13, 23), (13, 24), (15, 26), (16, 26), (16, 27),
-               (17, 28), (18, 29), (19, 30), (20, 30)}
-    if transition in c_trans or transition_i in c_trans:
-        return c
-    if transition == (4, 13) or transition_i == (4, 13):
-        return d
-    e_trans = {(13, 25), (9, 20), (3, 14)}
-    if transition in e_trans or transition_i in e_trans:
-        return e
-    f_trans = {(1, 21), (2, 22), (3, 23), (4, 24), (6, 26)}
-    if transition in f_trans or transition_i in f_trans:
-        return f
-    g_trans = {(3, 24), (4, 25), (5, 26), (6, 27), (9, 30)}
-    if transition in g_trans or transition_i in g_trans:
-        return g
-    h_trans = {(4, 23), (5, 27)}
-    if transition in h_trans or transition_i in h_trans:
-        return h
-    if transition == (3, 25) or transition_i == (2, 25):
-        return i
-    return -1
-
-
-def measure_vs_dataset(keyboard_mapping, dataset):
-    dist, words, chars, uncounted = 0, 0, 0, 0
-    finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_p": 16, "r_r": 17, "r_m": 18, "r_i": 19}
+def measure_vs_dataset(keyboard_mapping, finger_duty, cost, dataset):
+    dist, chars, uncounted = 0, 0, 0
+    finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_i": 16, "r_m": 17, "r_r": 18, "r_p": 19}
     while line := dataset.readline():
+        # TODO: make better>
         tokens = line.decode()[:-1].lower().split(" ")
-        words += len(tokens)
         for token in tokens:
             for char in token:
-                chars += 1
                 if char in keyboard_mapping.keys():
+                    chars += 1
                     trans_dest = keyboard_mapping[char]
-                    for finger in finger_pos:
-                        if result := calc_distance(finger_pos[finger], trans_dest) != -1:
-                            dist += result
-                            finger_pos[finger] = trans_dest
-                            break
+                    duty = finger_duty[trans_dest]
+                    transition = finger_pos[duty], trans_dest
+                    transition_i = trans_dest, finger_pos[duty]
+                    if transition[0] == transition_i[0]:
+                        pass
+                    elif transition in cost.keys():
+                        dist += cost[transition]
+                    else:
+                        dist += cost[transition_i]
+                    finger_pos[duty] = trans_dest
                 else:
                     uncounted += 1
-    return dist, words, chars, uncounted
+    return dist, chars, uncounted
 
 
-def get_keyboard_map(keyboard_layout):
+def get_keyboard_maps(keyboard_layout):
     i = 0
     keyboard_mapping = {}
     for char in keyboard_layout:
         keyboard_mapping[char] = i
         i += 1
-    return keyboard_mapping
+
+    # TODO: check these
+    finger_duty = dict.fromkeys([0, 10], "l_p")
+    finger_duty.update(dict.fromkeys([1, 11, 21], "l_r"))
+    finger_duty.update(dict.fromkeys([2, 12, 22], "l_m"))
+    finger_duty.update(dict.fromkeys([3, 13, 23, 4, 14, 24, 25], "l_i"))
+    finger_duty.update(dict.fromkeys([5, 6, 15, 16, 26, 27], "r_i"))
+    finger_duty.update(dict.fromkeys([7, 17, 28], "r_m"))
+    finger_duty.update(dict.fromkeys([8, 18, 29], "r_r"))
+    finger_duty.update(dict.fromkeys([9, 19, 20, 30], "r_p"))
+
+    # TODO: check these
+    a, b, c, d, e, f, g, h, i, r = 1.0, 1.1, 1.2, 1.3, 1.5, 2.0, 2.3, 2.5, 2.75, 0.0
+    cost = dict.fromkeys([(3, 4), (23, 24), (24, 25), (5, 6), (26, 27), (19, 20)], a)
+    cost.update(dict.fromkeys([(0, 10), (1, 11), (2, 12), (3, 13), (4, 14), (6, 16), (7, 17), (8, 18), (9, 19)], b))
+    cost.update(dict.fromkeys([(11, 21), (12, 22), (13, 23), (13, 24), (15, 26), (16, 26), (16, 27),
+                                (17, 28), (18, 29), (19, 30), (20, 30)], c))
+    cost.update(dict.fromkeys([(4, 13)], d))
+    cost.update(dict.fromkeys([(13, 25), (9, 20), (3, 14)], e))
+    cost.update(dict.fromkeys([(1, 21), (2, 22), (3, 23), (4, 24), (6, 26)], f))
+    cost.update(dict.fromkeys([(3, 24), (4, 25), (5, 26), (6, 27), (9, 30)], g))
+    cost.update(dict.fromkeys([(4, 23), (5, 27)], h))
+    cost.update(dict.fromkeys([(3, 25)], h))
+    return keyboard_mapping, finger_duty, cost
 
 
 def analyze_keyboard(keyboard, datasets):
@@ -78,40 +71,34 @@ def analyze_keyboard(keyboard, datasets):
         for file in files:
             if '.zip' in file:
                 zips.append(os.path.join(root, file))
-    total_distance, total_words, total_chars, total_uncounted, dataset_names = 0, 0, 0, 0, []
+    total_distance, total_chars, total_uncounted, dataset_names = 0, 0, 0, []
+    keyboard_mapping, finger_duty, cost = get_keyboard_maps(keyboard['layout'])
     for zip_path in zips:
         with ZipFile(zip_path, 'r') as zipObj:
             for file in zipObj.namelist():
                 if '.txt' in file:
                     dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
                     with zipObj.open(file) as dataset:
-                        dist, words, chars, uncounted = measure_vs_dataset(get_keyboard_map(keyboard['layout']),
-                                                                           dataset)
+                        dist, chars, uncounted = measure_vs_dataset(keyboard_mapping, finger_duty, cost, dataset)
                         total_distance += dist
-                        total_words += words
                         total_chars += chars
                         total_uncounted += uncounted
     keyboard['total_distance'] = total_distance
-    keyboard['total_words'] = total_words
     keyboard['total_chars'] = total_chars
     keyboard['total_uncounted'] = total_uncounted
-    if total_distance == 0 or total_words == 0 or total_chars == 0:
-        keyboard['efficiency'] = 0
-    else:
-        keyboard['efficiency'] = 2 / ((total_distance / total_words) + (total_distance / total_chars))
+    keyboard['efficiency'] = total_chars / total_distance
     keyboard['dataset_names'] = dataset_names
     keyboard['last_analysis'] = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     return keyboard
 
 
-def load_json_to_html(keyboard):
-    eel.read_data(keyboard.split("/")[1])
-
-
 def show_keyboards(keyboard):
-    eel.init('keyboards')
-    load_json_to_html(keyboard)
-    eel.start('index.html', mode='chrome-app', port=8080, cmdline_args=['--start-fullscreen'])
+    eel.init('display')
+
+    def load_json_to_html(name, layout, last_analysis, efficiency, datasets):
+        eel.read_data(name, layout, last_analysis, efficiency, datasets)
+    load_json_to_html(keyboard['name'], keyboard['layout'], keyboard['last_analysis'], keyboard['efficiency'], keyboard['dataset_names'])
+    eel.start('index.html', size=(1000, 700))
 
 
 def main(argv):
@@ -182,17 +169,17 @@ def main(argv):
         action="store_true",
         help="Create a visual display of the keyboard inputted. Ignores all other options."
     )
-
     args = parser.parse_args(argv)
-
-    if args.display:
-        show_keyboards(args.keyboard)
-        exit()
-
     with open(args.keyboard, "r") as json_file:
         keyboard = json.load(json_file)
+    if args.display:
+        show_keyboards(keyboard)
+        exit()
     if args.analyze:
         keyboard = analyze_keyboard(keyboard, args.dataset)
+    else:
+        pass # TODO
+        # generate_keyboard(keyboard, )
     with open(args.keyboard, "w") as json_file:
         json.dump(keyboard, json_file)
 
