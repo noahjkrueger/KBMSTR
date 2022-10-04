@@ -103,7 +103,7 @@ def show_keyboards(keyboard):
 
 def main(argv):
     parser = argparse.ArgumentParser(
-        prog="python3 KBMST.py",
+        prog="python3 KBMSTR.py",
         description="KBMSTR: Keyboard Master - Find the best keyboard for an input dataset using a genetic algorithm.",
         prefix_chars="-",
         epilog="Generates a 31 key keyboard, see https://github.com/noahjkrueger/Keyboard-Layout for more info."
