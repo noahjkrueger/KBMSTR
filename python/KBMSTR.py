@@ -9,43 +9,21 @@ from datetime import datetime
 
 class _KeyboardTool:
     def __init__(self):
-        self.__layout = None
-        self.__mapping = None
-        self.__finger_duty = None
-        self.__finger_pos = None
-        self.__cost_matrix = None
-        self.__accumulated_cost = 0
+        self.layout = None
+        self.mapping = None
+        self.finger_pos = None
+        self.accumulated_cost = 0
 
     def get_info(self):
-        return self.__layout, self.__accumulated_cost
+        return self.layout, self.accumulated_cost
 
     def set_layout(self, layout):
-        self.__layout = layout
+        self.layout = layout
         self._init_mapping(layout)
-        self._init_finger_duty()
         self._init_finger_pos()
-        self._init_cost_matrix()
 
-# TODO : accept mapping and finger duty, cost mapping do it that way
-    def transition_and_cost(self, char):
-        if not self.__layout:
-            raise Exception("KeyboardTool: not initialized. use KeyboardTool.set_layout(layout)")
-        if char == " ":
-            return True
-        try:
-            destination = self.__mapping[char]
-        except KeyError:
-            return False
-        responsible_finger = self.__finger_duty[destination]
-        transition = (self._finger_pos[responsible_finger], destination)
-        if transition[0] == transition[1]:
-            return True
-        self._finger_pos[responsible_finger] = destination
-        try:
-            self.__accumulated_cost += self.__cost_matrix[transition]
-        except KeyError:
-            self.__accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
-        return True
+    def _init_finger_pos(self):
+        self.finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_i": 16, "r_m": 17, "r_r": 18, "r_p": 19}
 
     def _init_mapping(self, layout):
         i = 0
@@ -53,10 +31,25 @@ class _KeyboardTool:
         for char in layout:
             mapping[char] = i
             i += 1
-        self.__mapping = mapping
+        self.mapping = mapping
 
-    def _init_finger_pos(self):
-        self._finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_i": 16, "r_m": 17, "r_r": 18, "r_p": 19}
+
+class AnalyzeKeyboards:
+    def __init__(self):
+        self.__kb_tools = list()
+        self.__chars = 0
+        self.__uncounted = 0
+        self.__dataset_names = list()
+        self.__finger_duty = None
+        self.__cost_matrix = None
+
+    def init_keyboards(self, keyboards):
+        self.__chars = 0
+        self.__uncounted = 0
+        for keyboard in keyboards:
+            tool = _KeyboardTool()
+            tool.set_layout(keyboard)
+            self.__kb_tools.append(tool)
 
     def _init_finger_duty(self):
         finger_duty = dict.fromkeys([0, 10, 21], "l_p")
@@ -83,31 +76,32 @@ class _KeyboardTool:
         cost.update(dict.fromkeys([(3, 25), (5, 27)], g))
         self.__cost_matrix = cost
 
-# TODO: use kbtool better -> all use same mapping
-class AnalyzeKeyboards:
-    def __init__(self):
-        self.__kb_tools = list()
-        self.__chars = 0
-        self.__uncounted = 0
-        self.__dataset_names = list()
-
-    def init_keyboards(self, keyboards):
-        for keyboard in keyboards:
-            tool = _KeyboardTool()
-            tool.set_layout(keyboard)
-            self.__kb_tools.append(tool)
-
     def _process_line(self, string):
         for char in string:
             self.__chars += 1
             for kb in self.__kb_tools:
-                if not kb.transition_and_cost(char):
+                if not kb.layout:
+                    raise Exception("keyboard mapping not initialized")
+                try:
+                    destination = kb.mapping[char]
+                except KeyError:
                     self.__uncounted += 1
-                    break
+                    continue
+                responsible_finger = self.__finger_duty[destination]
+                transition = (kb.finger_pos[responsible_finger], destination)
+                if transition[0] == transition[1]:
+                    continue
+                kb.finger_pos[responsible_finger] = destination
+                try:
+                    kb.accumulated_cost += self.__cost_matrix[transition]
+                except KeyError:
+                    kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
 
-    def preform_analysis(self, dataset):
+    def preform_analysis(self, dataset, store_dataset_names=True):
+        self._init_finger_duty()
+        self._init_cost_matrix()
         if not self.__kb_tools:
-            raise Exception("no keyboards initalized. use AnalyzeKeyboards.init_keyboards(list)")
+            raise Exception("no keyboards initialized. use AnalyzeKeyboards.init_keyboards(list)")
         zips = []
         for root, direct, files in os.walk(dataset):
             for file in files:
@@ -117,7 +111,8 @@ class AnalyzeKeyboards:
             with ZipFile(zip_path, 'r') as zipObj:
                 for file in zipObj.namelist():
                     if '.txt' in file:
-                        self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
+                        if store_dataset_names:
+                            self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
                         with zipObj.open(file) as dataset:
                             while line := dataset.readline():
                                 self._process_line(line.decode()[:-1].lower())
