@@ -1,11 +1,11 @@
 import argparse
 import eel
+import os
 
 from math import inf
 from sys import argv
-from os import walk, path
 from json import load, dump
-from random import sample, random, choice
+from random import sample, random, choice, getrandbits
 from zipfile import ZipFile
 from datetime import datetime
 
@@ -45,10 +45,15 @@ class AnalyzeKeyboards:
         self.__dataset_names = list()
         self.__finger_duty = None
         self.__cost_matrix = None
+        self.__dataset = None
 
-    def init_keyboards(self, keyboards):
+    def init(self, keyboards, dataset):
         self.__chars = 0
         self.__uncounted = 0
+        self.__dataset = dataset
+        self.update_keyboards(keyboards)
+
+    def update_keyboards(self, keyboards):
         for keyboard in keyboards:
             tool = _KeyboardTool()
             tool.set_layout(keyboard)
@@ -83,8 +88,6 @@ class AnalyzeKeyboards:
         for char in string:
             self.__chars += 1
             for kb in self.__kb_tools:
-                if not kb.layout:
-                    raise Exception("keyboard mapping not initialized")
                 try:
                     destination = kb.mapping[char]
                 except KeyError:
@@ -100,16 +103,17 @@ class AnalyzeKeyboards:
                 except KeyError:
                     kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
 
-    def preform_analysis(self, dataset, store_dataset_names=True):
+    # TODO: remove need for os.walk every time: move to init
+    def preform_analysis(self, store_dataset_names=True):
         self._init_finger_duty()
         self._init_cost_matrix()
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.init_keyboards(list)")
         zips = []
-        for root, direct, files in walk(dataset):
+        for root, direct, files in os.walk(self.__dataset):
             for file in files:
                 if '.zip' in file:
-                    zips.append(path.join(root, file))
+                    zips.append(os.path.join(root, file))
         for zip_path in zips:
             with ZipFile(zip_path, 'r') as zipObj:
                 for file in zipObj.namelist():
@@ -138,43 +142,52 @@ class AnalyzeKeyboards:
 
 
 def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stats):
+    parents = [original['layout']]
+    for i in range(1, gen_size):
+        parents.append(''.join(sample(original['layout'], len(original['layout']))))
+    judge = AnalyzeKeyboards()
+    judge.init(parents, dataset)
+    judge.preform_analysis()
+    results = judge.get_results()
+    parents = [x for _, x in sorted(zip(results['efficiencies'], results['keyboards']), key=lambda pair: pair[0])]
+    last_top_preform = results['efficiencies'][parents[0]]
     delta = inf
     og_len = len(original['layout'])
-    parents = set()
-    parents.add(original['layout'])
-    for i in range(1, gen_size // 5):
-        parents.add(''.join(sample(original['layout'], len(original['layout']))))
-    # TODO: rate and organize parents here
     while delta > epsilon:
-        print(parents)
-        current_gen = set()
-        for i in range(0, gen_size):
-            print(i)
-            parent1 = list(parents.pop())
-            print('a')
-            parent2 = list(parents.pop())
-            print('b')
+        current_gen = []
+        while len(current_gen) < gen_size:
+            parent1 = choice(list(parents))
+            parent2 = choice(list(parents))
             index_1, index_2 = 0, 0
             used = set()
-            child_order = []
-            x = 0
-            while len(used) <= og_len:
-                print(x, used)
-                pick = choice([True, False])
-                if pick and index_1 < og_len:
+            child_layout = []
+            while len(used) < og_len:
+                if index_2 == og_len or (bool(getrandbits(1)) and index_1 < og_len):
                     if parent1[index_1] not in used:
-                        child_order.append(parent1[index_1])
+                        child_layout.append(parent1[index_1])
                         used.add(parent1[index_1])
                     index_1 += 1
                 elif index_2 < og_len:
                     if parent2[index_2] not in used:
-                        child_order.append(parent2[index_2])
+                        child_layout.append(parent2[index_2])
                         used.add(parent2[index_2])
                     index_2 += 1
-                x += 1
-            current_gen.add(''.join(child_order))
-        print(current_gen)
-        break
+            # TODO: mutate
+            current_gen.append(''.join(child_layout))
+        print(f"Current gen : {current_gen}")
+        judge.update_keyboards(current_gen)
+        judge.preform_analysis(store_dataset_names=False)
+        results = judge.get_results()
+        # TODO: figure out why the fuck parents list is growing. its late annd im probably bwing dumb. goodnight.
+        print(f"parents a: {parents}")
+        sorted_list = [x for _, x in sorted(zip(results['efficiencies'], results['keyboards']), key=lambda pair: pair[0])]
+        parents = sorted_list
+        print(f"parents b: {parents}")
+        # TODO: something weird w eff.
+        print(results['efficiencies'][parents[0]], results['efficiencies'][parents[1]])
+        top_preform = results['efficiencies'][parents[0]]
+        delta = abs(last_top_preform - top_preform)
+        last_top_preform = top_preform
     return {}, {}
 
 
@@ -235,8 +248,8 @@ def main(argv):
         "-epsilon",
         metavar="EPSILON",
         type=float,
-        default=0.05,
-        help="Change the threshold of convergence. (Default: 0.05)"
+        default=0.005,
+        help="Change the threshold of convergence. (Default: 0.005)"
     )
     parser.add_argument(
         "-save_stats",
@@ -261,10 +274,12 @@ def main(argv):
     if args.display:
         show_keyboards(keyboard)
         exit()
+    if not args.dataset:
+        raise Exception("A dataset is required for this action.")
     if args.analyze:
         analysis = AnalyzeKeyboards()
-        analysis.init_keyboards([keyboard['layout']])
-        analysis.preform_analysis(args.dataset)
+        analysis.init([keyboard['layout']], args.dataset)
+        analysis.preform_analysis()
         results = analysis.get_results()
         keyboard['total_distance'] = results['keyboards'][keyboard['layout']]
         keyboard['total_chars'] = results['total_chars']
@@ -275,10 +290,9 @@ def main(argv):
         with open(args.keyboard, "w") as json_file:
             dump(keyboard, json_file)
         exit()
-
     raw, simplified = generate_keyboards(args.simplify, keyboard, args.dataset, args.gen_size, args.epsilon,
                                          args.save_stats)
-    with open(f"keyboards/{args.name}.raw", "w") as json_file:
+    with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw", "w") as json_file:
         dump(raw, json_file)
     if simplified:
         with open(f"keyboards/{args.name}.simplified", "w") as json_file:
