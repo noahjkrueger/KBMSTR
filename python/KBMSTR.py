@@ -1,8 +1,11 @@
 import argparse
-import sys
-import json
 import eel
-import os
+
+from math import inf
+from sys import argv
+from os import walk, path
+from json import load, dump
+from random import sample, random, choice
 from zipfile import ZipFile
 from datetime import datetime
 
@@ -103,10 +106,10 @@ class AnalyzeKeyboards:
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.init_keyboards(list)")
         zips = []
-        for root, direct, files in os.walk(dataset):
+        for root, direct, files in walk(dataset):
             for file in files:
                 if '.zip' in file:
-                    zips.append(os.path.join(root, file))
+                    zips.append(path.join(root, file))
         for zip_path in zips:
             with ZipFile(zip_path, 'r') as zipObj:
                 for file in zipObj.namelist():
@@ -134,7 +137,44 @@ class AnalyzeKeyboards:
         }
 
 
-def generate_keyboards(simplify, original, dataset, gensize, epsilon, save_stats):
+def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stats):
+    delta = inf
+    og_len = len(original['layout'])
+    parents = set()
+    parents.add(original['layout'])
+    for i in range(1, gen_size // 5):
+        parents.add(''.join(sample(original['layout'], len(original['layout']))))
+    # TODO: rate and organize parents here
+    while delta > epsilon:
+        print(parents)
+        current_gen = set()
+        for i in range(0, gen_size):
+            print(i)
+            parent1 = list(parents.pop())
+            print('a')
+            parent2 = list(parents.pop())
+            print('b')
+            index_1, index_2 = 0, 0
+            used = set()
+            child_order = []
+            x = 0
+            while len(used) <= og_len:
+                print(x, used)
+                pick = choice([True, False])
+                if pick and index_1 < og_len:
+                    if parent1[index_1] not in used:
+                        child_order.append(parent1[index_1])
+                        used.add(parent1[index_1])
+                    index_1 += 1
+                elif index_2 < og_len:
+                    if parent2[index_2] not in used:
+                        child_order.append(parent2[index_2])
+                        used.add(parent2[index_2])
+                    index_2 += 1
+                x += 1
+            current_gen.add(''.join(child_order))
+        print(current_gen)
+        break
     return {}, {}
 
 
@@ -217,7 +257,7 @@ def main(argv):
     args = parser.parse_args(argv)
 
     with open(args.keyboard, "r") as json_file:
-        keyboard = json.load(json_file)
+        keyboard = load(json_file)
     if args.display:
         show_keyboards(keyboard)
         exit()
@@ -233,17 +273,17 @@ def main(argv):
         keyboard['dataset_names'] = results['dataset_names']
         keyboard['last_analysis'] = results['last_analysis']
         with open(args.keyboard, "w") as json_file:
-            json.dump(keyboard, json_file)
+            dump(keyboard, json_file)
         exit()
 
-    raw, simplified = generate_keyboards(args.simplify, keyboard, args.dataset, args.gensize, args.epsilon,
+    raw, simplified = generate_keyboards(args.simplify, keyboard, args.dataset, args.gen_size, args.epsilon,
                                          args.save_stats)
     with open(f"keyboards/{args.name}.raw", "w") as json_file:
-        json.dump(raw, json_file)
+        dump(raw, json_file)
     if simplified:
         with open(f"keyboards/{args.name}.simplified", "w") as json_file:
-            json.dump(simplified, json_file)
+            dump(simplified, json_file)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(argv[1:])
