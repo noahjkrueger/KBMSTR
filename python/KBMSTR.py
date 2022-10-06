@@ -5,7 +5,7 @@ import os
 from math import inf
 from sys import argv
 from json import load, dump
-from random import sample, random, choice, getrandbits
+from random import sample, random, choice, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
 
@@ -54,6 +54,7 @@ class AnalyzeKeyboards:
         self.update_keyboards(keyboards)
 
     def update_keyboards(self, keyboards):
+        self.__kb_tools = list()
         for keyboard in keyboards:
             tool = _KeyboardTool()
             tool.set_layout(keyboard)
@@ -130,7 +131,7 @@ class AnalyzeKeyboards:
         for kb in self.__kb_tools:
             layout, total_cost = kb.get_info()
             keyboards[layout] = total_cost
-            efficiencies[layout] = (self.__chars - self.__uncounted) / total_cost
+            efficiencies[layout] = total_cost / (self.__chars - self.__uncounted)
         return {
             'keyboards': keyboards,
             'total_chars': self.__chars,
@@ -172,23 +173,31 @@ def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stat
                         child_layout.append(parent2[index_2])
                         used.add(parent2[index_2])
                     index_2 += 1
-            # TODO: mutate
+            mutate = True
+            while mutate:
+                i1, i2 = randint(0, og_len - 1), randint(0, og_len - 1)
+                old = child_layout[i1]
+                child_layout[i1] = child_layout[i2]
+                child_layout[i2] = old
+                mutate = bool(getrandbits(1))
             current_gen.append(''.join(child_layout))
-        print(f"Current gen : {current_gen}")
         judge.update_keyboards(current_gen)
         judge.preform_analysis(store_dataset_names=False)
         results = judge.get_results()
-        # TODO: figure out why the fuck parents list is growing. its late annd im probably bwing dumb. goodnight.
-        print(f"parents a: {parents}")
-        sorted_list = [x for _, x in sorted(zip(results['efficiencies'], results['keyboards']), key=lambda pair: pair[0])]
-        parents = sorted_list
-        print(f"parents b: {parents}")
-        # TODO: something weird w eff.
+        parents = [p for _, p in sorted(zip(results['efficiencies'].values(), results['keyboards'].keys()))]
         print(results['efficiencies'][parents[0]], results['efficiencies'][parents[1]])
         top_preform = results['efficiencies'][parents[0]]
         delta = abs(last_top_preform - top_preform)
         last_top_preform = top_preform
-    return {}, {}
+    return {
+        'layout': parents[0],
+        'total_distance': results['keyboards'][parents[0]],
+        'total_chars': results['total_chars'],
+        'total_uncounted': results['total_uncounted'],
+        'efficiency': results['efficiencies'][parents[0]],
+        'dataset_names': results['dataset_names'],
+        'last_analysis': results['last_analysis']
+    }, None
 
 
 def show_keyboards(keyboard):
@@ -292,10 +301,12 @@ def main(argv):
         exit()
     raw, simplified = generate_keyboards(args.simplify, keyboard, args.dataset, args.gen_size, args.epsilon,
                                          args.save_stats)
-    with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw", "w") as json_file:
+    with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw.json", "w") as json_file:
+        raw['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
         dump(raw, json_file)
     if simplified:
-        with open(f"keyboards/{args.name}.simplified", "w") as json_file:
+        with open(f"keyboards/{args.name}.simplified.json", "w") as json_file:
+            simplified['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
             dump(simplified, json_file)
 
 
