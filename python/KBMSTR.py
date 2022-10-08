@@ -46,11 +46,14 @@ class AnalyzeKeyboards:
         self.__finger_duty = None
         self.__cost_matrix = None
         self.__dataset = None
+        self.__zips = list()
+        self.__store_dataset_names = False
 
     def init(self, keyboards, dataset):
         self.__chars = 0
         self.__uncounted = 0
         self.__dataset = dataset
+        self._init_zip_list()
         self.update_keyboards(keyboards)
 
     def update_keyboards(self, keyboards):
@@ -59,6 +62,12 @@ class AnalyzeKeyboards:
             tool = _KeyboardTool()
             tool.set_layout(keyboard)
             self.__kb_tools.append(tool)
+
+    def _init_zip_list(self):
+        for root, direct, files in os.walk(self.__dataset):
+            for file in files:
+                if '.zip' in file:
+                    self.__zips.append(os.path.join(root, file))
 
     def _init_finger_duty(self):
         finger_duty = dict.fromkeys([0, 10, 21], "l_p")
@@ -104,26 +113,21 @@ class AnalyzeKeyboards:
                 except KeyError:
                     kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
 
-    # TODO: remove need for os.walk every time: move to init
-    def preform_analysis(self, store_dataset_names=True):
+    def preform_analysis(self):
         self._init_finger_duty()
         self._init_cost_matrix()
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.init_keyboards(list)")
-        zips = []
-        for root, direct, files in os.walk(self.__dataset):
-            for file in files:
-                if '.zip' in file:
-                    zips.append(os.path.join(root, file))
-        for zip_path in zips:
+        for zip_path in self.__zips:
             with ZipFile(zip_path, 'r') as zipObj:
                 for file in zipObj.namelist():
                     if '.txt' in file:
-                        if store_dataset_names:
+                        if self.__store_dataset_names:
                             self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
                         with zipObj.open(file) as dataset:
                             while line := dataset.readline():
                                 self._process_line(line.decode()[:-1].lower())
+        self.__store_dataset_names = False
 
     def get_results(self):
         keyboards = {}
@@ -182,7 +186,7 @@ def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stat
                 mutate = bool(getrandbits(1))
             current_gen.append(''.join(child_layout))
         judge.update_keyboards(current_gen)
-        judge.preform_analysis(store_dataset_names=False)
+        judge.preform_analysis()
         results = judge.get_results()
         parents = [p for _, p in sorted(zip(results['efficiencies'].values(), results['keyboards'].keys()))]
         print(results['efficiencies'][parents[0]], results['efficiencies'][parents[1]])
@@ -190,14 +194,14 @@ def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stat
         delta = abs(last_top_preform - top_preform)
         last_top_preform = top_preform
     return {
-        'layout': parents[0],
-        'total_distance': results['keyboards'][parents[0]],
-        'total_chars': results['total_chars'],
-        'total_uncounted': results['total_uncounted'],
-        'efficiency': results['efficiencies'][parents[0]],
-        'dataset_names': results['dataset_names'],
-        'last_analysis': results['last_analysis']
-    }, None
+               'layout': parents[0],
+               'total_distance': results['keyboards'][parents[0]],
+               'total_chars': results['total_chars'],
+               'total_uncounted': results['total_uncounted'],
+               'efficiency': results['efficiencies'][parents[0]],
+               'dataset_names': results['dataset_names'],
+               'last_analysis': results['last_analysis']
+           }, None
 
 
 def show_keyboards(keyboard):
