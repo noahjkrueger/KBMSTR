@@ -123,7 +123,6 @@ class AnalyzeKeyboards:
     def preform_analysis(self):
         self._init_finger_duty()
         self._init_cost_matrix()
-        print(len(self.__kb_tools))
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
         for zip_path in self.__zips:
@@ -133,10 +132,10 @@ class AnalyzeKeyboards:
                     if '.txt' in filenamelist[i]:
                         if self.__store_dataset_names:
                             self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{filenamelist[i]}")
+                    for kb_tool in self.__kb_tools:
                         with zipObj.open(filenamelist[i]) as dataset:
-                            for kb_tool in self.__kb_tools:
-                                while line := dataset.readline():
-                                    self._process_line(line.decode()[:-1].lower(), kb_tool)
+                            while line := dataset.readline():
+                                self._process_line(line.decode()[:-1].lower(), kb_tool)
         if self.__store_dataset_names:
             self.__chars = int(self.__chars / len(self.__kb_tools))
             self.__uncounted = int(self.__uncounted / len(self.__kb_tools))
@@ -244,7 +243,7 @@ class GeneticKeyboards:
         return "".join(self._mutate(child))
 
     def _calculate_fitness(self):
-        print(F"Calculating fitness for generation {self.__gen_number}")
+        print(F"Calculating fitness for generation {self.__gen_number} with generation size: {self.__gen_size}")
         self.__judge.update_keyboards(self.__current_gen)
         self.__judge.preform_analysis()
         self.__current_results = self.__judge.get_results()
@@ -258,8 +257,6 @@ class GeneticKeyboards:
         else:
             self.__num_steps = 0
         self.__current_gen_top_performance = top_preform
-        for x, y in zip(self.__current_results['keyboards'], self.__current_results['efficiencies']):
-            print(f"{x}: {y}")
         print(f"Top preform efficiency: {self.__current_gen_top_performance}, "
               f"delta={self.__delta}, steps={self.__num_steps}")
 
@@ -295,7 +292,7 @@ def main(argv):
         default="",
         help="A single or a collection of (.zip) of datasets (.txt) to be used in the generation. Enter a directory "
              "or a single .zip compressed file. Only .txt files within a .zip file are used to rank the keyboards. "
-             "Directories of multiple .zip collections are allowed. "
+             "Directories of multiple .zip collections are allowed."
     )
     parser.add_argument(
         "-name",
