@@ -120,7 +120,8 @@ class AnalyzeKeyboards:
             except KeyError:
                 kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
 
-    def preform_analysis(self):
+    def preform_analysis(self, distance_limit):
+        print(f"Using distance limit {distance_limit} to speed things up")
         self._init_finger_duty()
         self._init_cost_matrix()
         if not self.__kb_tools:
@@ -136,6 +137,9 @@ class AnalyzeKeyboards:
                         with zipObj.open(filenamelist[i]) as dataset:
                             while line := dataset.readline():
                                 self._process_line(line.decode()[:-1].lower(), kb_tool)
+                                if kb_tool.accumulated_cost > distance_limit: # TODO: maybe make better heuristic - store distances per file and skip then
+                                    kb_tool.accumulated_cost = inf
+                                    break
         if self.__store_dataset_names:
             self.__chars = int(self.__chars / len(self.__kb_tools))
             self.__uncounted = int(self.__uncounted / len(self.__kb_tools))
@@ -162,9 +166,7 @@ class AnalyzeKeyboards:
         }
 
 
-# TODO: make is so while a keyboard is being analyzed if the distance is greater than previous best, stop -> save a
-#  bunch of time this will require some other things to be done. mostly index stuff. and changing parameters. maybe
-#  put process line (above in analyze and do one at time. change bias weights. anything to reduce time analyzing.
+
 class GeneticKeyboards:
     def __init__(self, original, dataset, produce_simple, gen_size,
                  epsilon, steps_to_converge, mutation_rate, save_stats):
@@ -178,13 +180,14 @@ class GeneticKeyboards:
         self.__steps_to_converge = steps_to_converge
         self.__num_steps = 0
         self.__gen_number = 0
-        self.__current_gen_top_performance = 0
+        self.__current_gen_top_performance = inf
         self.__current_gen = [original]
         self.__current_results = None
+        print(f"-------------------GENERATION {self.__gen_number}\n"
+              f"Top preform efficiency: {self.__current_gen_top_performance}, "
+              f"delta={self.__delta}, steps={self.__num_steps}")
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
-        print(f"Top preform efficiency: {self.__current_gen_top_performance}, "
-              f"delta={self.__delta}, steps={self.__num_steps}")
         self.__judge = AnalyzeKeyboards(dataset)
         self.__best_keyboard = None
         self._calculate_fitness()
@@ -192,9 +195,17 @@ class GeneticKeyboards:
 
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
-            print(f"-------------------GENERATION {self.__gen_number}")
+            print(f"-------------------GENERATION {self.__gen_number}\n"
+                  f"Top preform efficiency: {self.__current_gen_top_performance}, "
+                  f"delta={self.__delta}, steps={self.__num_steps}")
             new_gen = [self.__best_keyboard]
-            weights = [(self.__gen_size - i)**2 for i in range(0, self.__gen_size)]
+            weights = list()
+            for i in range(0, self.__gen_size):
+                if self.__current_results['efficiencies'][i] == inf:
+                    weights.append(0)
+                else:
+                    weights.append((self.__gen_size - i)**2)
+            # weights = [(self.__gen_size - i)**2 for i in range(0, self.__gen_size)]
             while len(new_gen) < self.__gen_size:
                 parent_a, parent_b = choices(self.__current_gen, weights, k=2)
                 new_gen.append(self._crossover(parent_a, parent_b))
@@ -245,20 +256,21 @@ class GeneticKeyboards:
     def _calculate_fitness(self):
         print(F"Calculating fitness for generation {self.__gen_number} with generation size: {self.__gen_size}")
         self.__judge.update_keyboards(self.__current_gen)
-        self.__judge.preform_analysis()
+        try:
+            self.__judge.preform_analysis(min(self.__current_results['total_distances']))
+        except TypeError:
+            self.__judge.preform_analysis(inf)
         self.__current_results = self.__judge.get_results()
         self.__current_gen = [x for _, x in sorted(zip(self.__current_results['efficiencies'],
                                                        self.__current_results['keyboards']), key=lambda pair: pair[0])]
         self.__best_keyboard = self.__current_gen[0]
-        top_preform = self.__current_results['efficiencies'][0]
+        top_preform = min(self.__current_results['efficiencies'])
         self.__delta = abs(self.__current_gen_top_performance - top_preform)
         if self.__delta <= self.__epsilon:
             self.__num_steps += 1
         else:
             self.__num_steps = 0
         self.__current_gen_top_performance = top_preform
-        print(f"Top preform efficiency: {self.__current_gen_top_performance}, "
-              f"delta={self.__delta}, steps={self.__num_steps}")
 
 
 def show_keyboards(keyboard):
@@ -364,7 +376,7 @@ def main(argv):
     if args.analyze:
         analysis = AnalyzeKeyboards(args.dataset)
         analysis.update_keyboards([keyboard['layout']])
-        analysis.preform_analysis()
+        analysis.preform_analysis(inf)
         results = analysis.get_results()
         keyboard['total_distance'] = results['total_distances'][0]
         keyboard['total_chars'] = results['total_chars']
