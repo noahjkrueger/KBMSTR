@@ -5,7 +5,7 @@ import os
 from math import inf
 from sys import argv
 from json import load, dump
-from random import sample, choices, getrandbits, randint
+from random import sample, random, choices, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
 
@@ -100,7 +100,7 @@ class AnalyzeKeyboards:
                 try:
                     destination = kb.mapping[char]
                 except KeyError:
-                    if self.__store_dataset_names: # TODO: For some reason, this is an issue.
+                    if self.__store_dataset_names:  # TODO: For some reason, this is an issue.
                         self.__uncounted += 1
                     continue
                 responsible_finger = self.__finger_duty[destination]
@@ -145,72 +145,88 @@ class AnalyzeKeyboards:
             'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         }
 
-
 # TODO: make is so while a keyboard is being analyzed if the distance is greater than previous best, stop -> save a
 #  bunch of time this will require some other things to be done. mostly index stuff. and changing parameters. maybe
 #  put process line (above in analyize and do one at time. change bias weights. anything to reduce time analyzing.
-def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stats):
-    generation_num = 1
-    parents = [original['layout']]
-    for i in range(1, gen_size):
-        parents.append(''.join(sample(original['layout'], len(original['layout']))))
-    print(f"Generation: {generation_num}\nJudging generation: {generation_num}")
-    generation_num += 1
-    judge = AnalyzeKeyboards(parents, dataset)
-    judge.preform_analysis()
-    results = judge.get_results()
-    parents = [x for _, x in sorted(zip(results['efficiencies'], results['keyboards']), key=lambda pair: pair[0])]
-    last_top_preform = results['efficiencies'][parents[0]]
-    print(f"Top preform efficiency: {last_top_preform}")
-    delta = inf
-    og_len = len(original['layout'])
-    weights = [og_len - i for i in range(0, gen_size)]
-    while delta > epsilon:
-        print(f"Generation: {generation_num}")
-        current_gen = []
-        while len(current_gen) < gen_size:
-            parent1, parent2 = choices(parents, weights, k=2)
-            index_1, index_2 = 0, 0
-            used = set()
-            child_layout = []
-            while len(used) < og_len:
-                if index_2 == og_len or (bool(getrandbits(1)) and index_1 < og_len):
-                    if parent1[index_1] not in used:
-                        child_layout.append(parent1[index_1])
-                        used.add(parent1[index_1])
-                    index_1 += 1
-                elif index_2 < og_len:
-                    if parent2[index_2] not in used:
-                        child_layout.append(parent2[index_2])
-                        used.add(parent2[index_2])
-                    index_2 += 1
-            mutate = True
-            while mutate:
-                i1, i2 = randint(0, og_len - 1), randint(0, og_len - 1)
-                old = child_layout[i1]
-                child_layout[i1] = child_layout[i2]
-                child_layout[i2] = old
-                mutate = bool(getrandbits(1)) and bool(getrandbits(1))
-            current_gen.append(''.join(child_layout))
-        print(f"Judging generation: {generation_num}")
-        judge.update_keyboards(current_gen)
-        judge.preform_analysis()
-        results = judge.get_results()
-        parents = [p for _, p in sorted(zip(results['efficiencies'].values(), results['keyboards'].keys()))]
-        top_preform = results['efficiencies'][parents[0]]
-        delta = abs(last_top_preform - top_preform)
-        last_top_preform = top_preform
-        print(f"Top preform efficiency: {last_top_preform}")
-        generation_num += 1
-    return {
-               'layout': parents[0],
-               'total_distance': results['keyboards'][parents[0]],
-               'total_chars': results['total_chars'],
-               'total_uncounted': results['total_uncounted'],
-               'efficiency': results['efficiencies'][parents[0]],
-               'dataset_names': results['dataset_names'],
-               'last_analysis': results['last_analysis']
-           }, None
+class GeneticKeyboards:
+    def __init__(self, original, dataset, produce_simple, gen_size, epsilon, mutation_rate, save_stats):
+        self.__original = original
+        self.__produce_simple = produce_simple
+        self.__mutate_rate = mutation_rate
+        self.__save_stats = save_stats # TODO
+        self.__gen_size = gen_size
+        self.__delta = inf
+        self.__epsilon = epsilon
+        self.__gen_number = 1
+        self.__current_gen_top_performance = 0
+        self.__current_gen = [original]
+        self.__current_results = None
+        for i in range(1, gen_size):
+            self.__current_gen.append(''.join(sample(original, len(original))))
+        self.__judge = AnalyzeKeyboards(self.__current_gen, dataset)
+        self._calculate_fitness()
+
+    def generate(self):
+        new_gen = list()
+        results = None
+        while self.__delta < self.__epsilon:
+            print(f"Generation: {self.__gen_number}")
+            length = len(self.__original)
+            weights = [length - i for i in range(0, self.__gen_size)]
+            parent_a, parent_b = choices(self.__current_gen, weights, k=2)
+            new_gen.append(self._crossover(parent_a, parent_b))
+            self._calculate_fitness()
+            print(results)
+        simple = None
+        if self.__produce_simple:
+            pass # TODO
+        return {
+                   'layout': self.__current_gen[0],
+                   'total_distance': self.__current_results['keyboards'][self.__current_gen[0]],
+                   'total_chars': self.__current_results['total_chars'],
+                   'total_uncounted': self.__current_results['total_uncounted'],
+                   'efficiency': self.__current_results['efficiencies'][self.__current_gen[0]],
+                   'dataset_names': self.__current_results['dataset_names'],
+                   'last_analysis': self.__current_results['last_analysis']
+               }, simple
+
+    def _mutate(self, keyboard):
+        length = len(keyboard)
+        while random() <= self.__mutate_rate:
+            i1, i2 = randint(0, length - 1), randint(0, length - 1)
+            old = keyboard[i1]
+            keyboard[i1] = keyboard[i2]
+            keyboard[i2] = old
+        return keyboard
+
+    def _crossover(self, parent_a, parent_b):
+        index_a, index_b = 0, 0
+        used = set()
+        child = []
+        length = len(self.__original)
+        while len(used) < length:
+            if index_b == len or (bool(getrandbits(1)) and index_a < length):
+                if parent_a[index_a] not in used:
+                    child.append(parent_a[index_a])
+                    used.add(parent_a[index_a])
+                index_a += 1
+            elif index_b < length:
+                if parent_b[index_b] not in used:
+                    child.append(parent_b[index_b])
+                    used.add(parent_b[index_b])
+                index_b += 1
+        return "".join(self._mutate(child))
+
+    def _calculate_fitness(self):
+        print(F"Calculating fitness for generation {self.__gen_number}")
+        self.__judge.preform_analysis()
+        self.__current_results = self.__judge.get_results()
+        self.__current_gen = [x for _, x in sorted(zip(self.__current_results['efficiencies'],
+                                                       self.__current_results['keyboards']), key=lambda pair: pair[0])]
+        top_preform = self.__current_results['efficiencies'][self.__current_gen[0]]
+        self.__delta = abs(self.__current_gen_top_performance - top_preform)
+        self.__current_gen_top_performance = top_preform
+        print(f"Top preform efficiency: {self.__current_gen_top_performance}")
 
 
 def show_keyboards(keyboard):
@@ -219,7 +235,8 @@ def show_keyboards(keyboard):
     def load_json_to_html(name, layout, last_analysis, efficiency, datasets):
         eel.read_data(name, layout, last_analysis, efficiency, datasets)
 
-    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], keyboard['last_analysis'], keyboard['efficiency'],
+    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], keyboard['last_analysis'],
+                      keyboard['efficiency'],
                       keyboard['dataset_names'])
     eel.start('index.html', size=(1000, 700))
 
@@ -267,6 +284,13 @@ def main(argv):
         help="Chose the number of members for each generation. (Default: 100)"
     )
     parser.add_argument(
+        "-mutation_rate",
+        metavar="RATE",
+        type=float,
+        default=0.25,
+        help="Change the rate at which mutations occur. (Default: 0.25)"
+    )
+    parser.add_argument(
         "-epsilon",
         metavar="EPSILON",
         type=float,
@@ -290,7 +314,6 @@ def main(argv):
         help="Create a visual display of the keyboard inputted. Ignores all other options."
     )
     args = parser.parse_args(argv)
-
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
     if args.display:
@@ -311,8 +334,9 @@ def main(argv):
         with open(args.keyboard, "w") as json_file:
             dump(keyboard, json_file)
         exit()
-    raw, simplified = generate_keyboards(args.simplify, keyboard, args.dataset, args.gen_size, args.epsilon,
-                                         args.save_stats)
+    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.simplify, args.gen_size,
+                                 args.epsilon, args.mutation_rate, args.save_stats)
+    raw, simplified = generator.generate()
     with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw.json", "w") as json_file:
         raw['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
         dump(raw, json_file)
