@@ -1,4 +1,6 @@
 import argparse
+from time import sleep
+
 import eel
 import os
 
@@ -8,6 +10,11 @@ from json import load, dump
 from random import sample, random, choices, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
+from tqdm import tqdm
+
+
+def cls():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 # TODO: allow different finger pos
@@ -93,55 +100,61 @@ class AnalyzeKeyboards:
         cost.update(dict.fromkeys([(3, 25), (5, 27)], g))
         self.__cost_matrix = cost
 
-    # TODO: find better way to get char and uncounted ONCE
-    def _process_line(self, string):
+    def _process_line(self, string, kb):
         for char in string:
             if self.__store_dataset_names:
                 self.__chars += 1
-            for kb in self.__kb_tools:
-                try:
-                    destination = kb.mapping[char]
-                except KeyError:
-                    if self.__store_dataset_names:
-                        self.__uncounted += 1
-                    continue
-                responsible_finger = self.__finger_duty[destination]
-                transition = (kb.finger_pos[responsible_finger], destination)
-                if transition[0] == transition[1]:
-                    continue
-                kb.finger_pos[responsible_finger] = destination
-                try:
-                    kb.accumulated_cost += self.__cost_matrix[transition]
-                except KeyError:
-                    kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
+            try:
+                destination = kb.mapping[char]
+            except KeyError:
+                if self.__store_dataset_names:
+                    self.__uncounted += 1
+                continue
+            responsible_finger = self.__finger_duty[destination]
+            transition = (kb.finger_pos[responsible_finger], destination)
+            if transition[0] == transition[1]:
+                continue
+            kb.finger_pos[responsible_finger] = destination
+            try:
+                kb.accumulated_cost += self.__cost_matrix[transition]
+            except KeyError:
+                kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
 
     def preform_analysis(self):
         self._init_finger_duty()
         self._init_cost_matrix()
+        print(len(self.__kb_tools))
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
         for zip_path in self.__zips:
             with ZipFile(zip_path, 'r') as zipObj:
-                for file in zipObj.namelist():
-                    if '.txt' in file:
+                filenamelist = zipObj.namelist()
+                for i in tqdm(range(0, len(filenamelist))):
+                    if '.txt' in filenamelist[i]:
                         if self.__store_dataset_names:
-                            self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
-                        with zipObj.open(file) as dataset:
-                            while line := dataset.readline():
-                                self._process_line(line.decode()[:-1].lower())
+                            self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{filenamelist[i]}")
+                        with zipObj.open(filenamelist[i]) as dataset:
+                            for kb_tool in self.__kb_tools:
+                                while line := dataset.readline():
+                                    self._process_line(line.decode()[:-1].lower(), kb_tool)
         if self.__store_dataset_names:
+            self.__chars = int(self.__chars / len(self.__kb_tools))
             self.__uncounted = int(self.__uncounted / len(self.__kb_tools))
             self.__store_dataset_names = False
+        cls()
 
     def get_results(self):
-        keyboards = {}
-        efficiencies = {}
+        keyboards = list()
+        total_distances = list()
+        efficiencies = list()
         for kb in self.__kb_tools:
             layout, total_cost = kb.get_info()
-            keyboards[layout] = total_cost
-            efficiencies[layout] = total_cost / (self.__chars - self.__uncounted)
+            keyboards.append(layout)
+            total_distances.append(total_cost)
+            efficiencies.append(total_cost / (self.__chars - self.__uncounted))
         return {
             'keyboards': keyboards,
+            'total_distances': total_distances,
             'total_chars': self.__chars,
             'total_uncounted': self.__uncounted,
             'efficiencies': efficiencies,
@@ -152,9 +165,10 @@ class AnalyzeKeyboards:
 
 # TODO: make is so while a keyboard is being analyzed if the distance is greater than previous best, stop -> save a
 #  bunch of time this will require some other things to be done. mostly index stuff. and changing parameters. maybe
-#  put process line (above in analyize and do one at time. change bias weights. anything to reduce time analyzing.
+#  put process line (above in analyze and do one at time. change bias weights. anything to reduce time analyzing.
 class GeneticKeyboards:
-    def __init__(self, original, dataset, produce_simple, gen_size, epsilon, mutation_rate, save_stats):
+    def __init__(self, original, dataset, produce_simple, gen_size,
+                 epsilon, steps_to_converge, mutation_rate, save_stats):
         self.__original = original
         self.__produce_simple = produce_simple
         self.__mutate_rate = mutation_rate
@@ -162,21 +176,26 @@ class GeneticKeyboards:
         self.__gen_size = gen_size
         self.__delta = inf
         self.__epsilon = epsilon
+        self.__steps_to_converge = steps_to_converge
+        self.__num_steps = 0
         self.__gen_number = 0
         self.__current_gen_top_performance = 0
         self.__current_gen = [original]
         self.__current_results = None
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
+        print(f"Top preform efficiency: {self.__current_gen_top_performance}, "
+              f"delta={self.__delta}, steps={self.__num_steps}")
         self.__judge = AnalyzeKeyboards(dataset)
+        self.__best_keyboard = None
         self._calculate_fitness()
         self.__gen_number = 1
 
     def generate(self):
-        while self.__delta > self.__epsilon:
-            new_gen = list()
-            length = len(self.__original)
-            weights = [length - i for i in range(0, self.__gen_size)]
+        while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
+            print(f"-------------------GENERATION {self.__gen_number}")
+            new_gen = [self.__best_keyboard]
+            weights = [(self.__gen_size - i)**2 for i in range(0, self.__gen_size)]
             while len(new_gen) < self.__gen_size:
                 parent_a, parent_b = choices(self.__current_gen, weights, k=2)
                 new_gen.append(self._crossover(parent_a, parent_b))
@@ -187,24 +206,23 @@ class GeneticKeyboards:
         if self.__produce_simple:
             pass  # TODO: produce a simplified version of the best one. probably another method.
         return {
-                   'layout': self.__current_gen[0],
-                   'total_distance': self.__current_results['keyboards'][self.__current_gen[0]],
+                   'layout': self.__best_keyboard,
+                   'total_distance': self.__current_results['total_distances'][0],
                    'total_chars': self.__current_results['total_chars'],
                    'total_uncounted': self.__current_results['total_uncounted'],
-                   'efficiency': self.__current_results['efficiencies'][self.__current_gen[0]],
+                   'efficiency': self.__current_results['efficiencies'][0],
                    'dataset_names': self.__current_results['dataset_names'],
                    'last_analysis': self.__current_results['last_analysis']
                }, simple
 
     def _mutate(self, keyboard):
         length = len(keyboard)
-        mutation = True
-        while mutation:
-            i1, i2 = randint(0, length - 1), randint(0, length - 1)
-            old = keyboard[i1]
-            keyboard[i1] = keyboard[i2]
-            keyboard[i2] = old
-            mutation = random() <= self.__mutate_rate
+        for i in range(0, len(self.__original)):
+            if random() <= self.__mutate_rate:
+                i1, i2 = randint(0, length - 1), randint(0, length - 1)
+                old = keyboard[i1]
+                keyboard[i1] = keyboard[i2]
+                keyboard[i2] = old
         return keyboard
 
     def _crossover(self, parent_a, parent_b):
@@ -232,10 +250,18 @@ class GeneticKeyboards:
         self.__current_results = self.__judge.get_results()
         self.__current_gen = [x for _, x in sorted(zip(self.__current_results['efficiencies'],
                                                        self.__current_results['keyboards']), key=lambda pair: pair[0])]
-        top_preform = self.__current_results['efficiencies'][self.__current_gen[0]]
+        self.__best_keyboard = self.__current_gen[0]
+        top_preform = self.__current_results['efficiencies'][0]
         self.__delta = abs(self.__current_gen_top_performance - top_preform)
+        if self.__delta <= self.__epsilon:
+            self.__num_steps += 1
+        else:
+            self.__num_steps = 0
         self.__current_gen_top_performance = top_preform
-        print(f"Top preform efficiency: {self.__current_gen_top_performance} delta {self.__delta}")
+        for x, y in zip(self.__current_results['keyboards'], self.__current_results['efficiencies']):
+            print(f"{x}: {y}")
+        print(f"Top preform efficiency: {self.__current_gen_top_performance}, "
+              f"delta={self.__delta}, steps={self.__num_steps}")
 
 
 def show_keyboards(keyboard):
@@ -297,14 +323,20 @@ def main(argv):
         metavar="RATE",
         type=float,
         default=0.25,
-        help="Change the rate at which mutations occur. Each child will always mutate at least once, even if set to "
-             "0.0 to preserve diversity and avoid early convergence. (Default: 0.25) "
+        help="Change the rate at which mutations occur. (Default: 0.25) "
     )
     parser.add_argument(
         "-epsilon",
         metavar="EPSILON",
         type=float,
         default=0.005,
+        help="Change the threshold of convergence. (Default: 0.005)"
+    )
+    parser.add_argument(
+        "-steps_to_converge",
+        metavar="STEPS",
+        type=int,
+        default=5,
         help="Change the threshold of convergence. (Default: 0.005)"
     )
     parser.add_argument(
@@ -323,6 +355,7 @@ def main(argv):
         action="store_true",
         help="Create a visual display of the keyboard inputted. Ignores all other options."
     )
+    cls()
     args = parser.parse_args(argv)
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
@@ -332,20 +365,21 @@ def main(argv):
     if not args.dataset:
         raise Exception("A dataset is required for this action.")
     if args.analyze:
-        analysis = AnalyzeKeyboards([keyboard['layout']], args.dataset)
+        analysis = AnalyzeKeyboards(args.dataset)
+        analysis.update_keyboards([keyboard['layout']])
         analysis.preform_analysis()
         results = analysis.get_results()
-        keyboard['total_distance'] = results['keyboards'][keyboard['layout']]
+        keyboard['total_distance'] = results['total_distances'][0]
         keyboard['total_chars'] = results['total_chars']
         keyboard['total_uncounted'] = results['total_uncounted']
-        keyboard['efficiency'] = results['efficiencies'][keyboard['layout']]
+        keyboard['efficiency'] = results['efficiencies'][0]
         keyboard['dataset_names'] = results['dataset_names']
         keyboard['last_analysis'] = results['last_analysis']
         with open(args.keyboard, "w") as json_file:
             dump(keyboard, json_file)
         exit()
     generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.simplify, args.gen_size,
-                                 args.epsilon, args.mutation_rate, args.save_stats)
+                                 args.epsilon, args.steps_to_converge, args.mutation_rate, args.save_stats)
     raw, simplified = generator.generate()
     with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw.json", "w") as json_file:
         raw['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
@@ -354,6 +388,11 @@ def main(argv):
         with open(f"keyboards/{args.name}.simplified.json", "w") as json_file:
             simplified['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
             dump(simplified, json_file)
+    cls()
+    print(f"Finished running KBMSTR with args:\n\n\tkeyboard={args.keyboard}\n\tdataset={args.dataset}\n\t"
+          f"name={args.name}\n\tsimplify={args.simplify}\n\tgen_size={args.gen_size}\n\t"
+          f"mutation_rate={args.mutation_rate}\n\tepsilon={args.epsilon}\n\tsteps_to_converge={args.steps_to_converge}"
+          f"\n\tsave_stats={args.save_stats}\n\tanalyze={args.analyze}\n\tdisplay={args.display}\n")
 
 
 if __name__ == "__main__":
