@@ -5,7 +5,7 @@ import os
 from math import inf
 from sys import argv
 from json import load, dump
-from random import sample, random, choice, getrandbits, randint
+from random import sample, choices, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
 
@@ -13,7 +13,7 @@ from datetime import datetime
 class _KeyboardTool:
     def __init__(self):
         self.layout = None
-        self.mapping = None
+        self.mapping = {}
         self.finger_pos = None
         self.accumulated_cost = 0
 
@@ -30,31 +30,29 @@ class _KeyboardTool:
 
     def _init_mapping(self, layout):
         i = 0
-        mapping = {}
         for char in layout:
-            mapping[char] = i
+            self.mapping[char] = i
             i += 1
-        self.mapping = mapping
 
 
 class AnalyzeKeyboards:
-    def __init__(self):
-        self.__kb_tools = list()
+    def __init__(self, keyboards, dataset):
         self.__chars = 0
         self.__uncounted = 0
-        self.__dataset_names = list()
+
+        self.__kb_tools = list()
         self.__finger_duty = None
         self.__cost_matrix = None
-        self.__dataset = None
-        self.__zips = list()
-        self.__store_dataset_names = False
-
-    def init(self, keyboards, dataset):
-        self.__chars = 0
-        self.__uncounted = 0
-        self.__dataset = dataset
-        self._init_zip_list()
         self.update_keyboards(keyboards)
+
+        self.__dataset = dataset
+        self.__zips = list()
+        self.__dataset_names = list()
+        self._init_zip_list()
+        if self.__zips == list():
+            raise Exception(f"No .zip files found in directory {self.__dataset}. Please provide the -dataset arg with a"
+                            f" directory that contains .zip compressed archives of .txt files.")
+        self.__store_dataset_names = True
 
     def update_keyboards(self, keyboards):
         self.__kb_tools = list()
@@ -96,12 +94,14 @@ class AnalyzeKeyboards:
 
     def _process_line(self, string):
         for char in string:
-            self.__chars += 1
+            if self.__store_dataset_names:
+                self.__chars += 1
             for kb in self.__kb_tools:
                 try:
                     destination = kb.mapping[char]
                 except KeyError:
-                    self.__uncounted += 1
+                    if self.__store_dataset_names: # TODO: For some reason, this is an issue.
+                        self.__uncounted += 1
                     continue
                 responsible_finger = self.__finger_duty[destination]
                 transition = (kb.finger_pos[responsible_finger], destination)
@@ -146,23 +146,30 @@ class AnalyzeKeyboards:
         }
 
 
+# TODO: make is so while a keyboard is being analyzed if the distance is greater than previous best, stop -> save a
+#  bunch of time this will require some other things to be done. mostly index stuff. and changing parameters. maybe
+#  put process line (above in analyize and do one at time. change bias weights. anything to reduce time analyzing.
 def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stats):
+    generation_num = 1
     parents = [original['layout']]
     for i in range(1, gen_size):
         parents.append(''.join(sample(original['layout'], len(original['layout']))))
-    judge = AnalyzeKeyboards()
-    judge.init(parents, dataset)
+    print(f"Generation: {generation_num}\nJudging generation: {generation_num}")
+    generation_num += 1
+    judge = AnalyzeKeyboards(parents, dataset)
     judge.preform_analysis()
     results = judge.get_results()
     parents = [x for _, x in sorted(zip(results['efficiencies'], results['keyboards']), key=lambda pair: pair[0])]
     last_top_preform = results['efficiencies'][parents[0]]
+    print(f"Top preform efficiency: {last_top_preform}")
     delta = inf
     og_len = len(original['layout'])
+    weights = [og_len - i for i in range(0, gen_size)]
     while delta > epsilon:
+        print(f"Generation: {generation_num}")
         current_gen = []
         while len(current_gen) < gen_size:
-            parent1 = choice(list(parents))
-            parent2 = choice(list(parents))
+            parent1, parent2 = choices(parents, weights, k=2)
             index_1, index_2 = 0, 0
             used = set()
             child_layout = []
@@ -183,16 +190,18 @@ def generate_keyboards(simplify, original, dataset, gen_size, epsilon, save_stat
                 old = child_layout[i1]
                 child_layout[i1] = child_layout[i2]
                 child_layout[i2] = old
-                mutate = bool(getrandbits(1))
+                mutate = bool(getrandbits(1)) and bool(getrandbits(1))
             current_gen.append(''.join(child_layout))
+        print(f"Judging generation: {generation_num}")
         judge.update_keyboards(current_gen)
         judge.preform_analysis()
         results = judge.get_results()
         parents = [p for _, p in sorted(zip(results['efficiencies'].values(), results['keyboards'].keys()))]
-        print(results['efficiencies'][parents[0]], results['efficiencies'][parents[1]])
         top_preform = results['efficiencies'][parents[0]]
         delta = abs(last_top_preform - top_preform)
         last_top_preform = top_preform
+        print(f"Top preform efficiency: {last_top_preform}")
+        generation_num += 1
     return {
                'layout': parents[0],
                'total_distance': results['keyboards'][parents[0]],
@@ -210,7 +219,7 @@ def show_keyboards(keyboard):
     def load_json_to_html(name, layout, last_analysis, efficiency, datasets):
         eel.read_data(name, layout, last_analysis, efficiency, datasets)
 
-    load_json_to_html(keyboard['name'], keyboard['layout'], keyboard['last_analysis'], keyboard['efficiency'],
+    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], keyboard['last_analysis'], keyboard['efficiency'],
                       keyboard['dataset_names'])
     eel.start('index.html', size=(1000, 700))
 
@@ -261,8 +270,8 @@ def main(argv):
         "-epsilon",
         metavar="EPSILON",
         type=float,
-        default=0.005,
-        help="Change the threshold of convergence. (Default: 0.005)"
+        default=0.05,
+        help="Change the threshold of convergence. (Default: 0.05)"
     )
     parser.add_argument(
         "-save_stats",
@@ -290,8 +299,7 @@ def main(argv):
     if not args.dataset:
         raise Exception("A dataset is required for this action.")
     if args.analyze:
-        analysis = AnalyzeKeyboards()
-        analysis.init([keyboard['layout']], args.dataset)
+        analysis = AnalyzeKeyboards([keyboard['layout']], args.dataset)
         analysis.preform_analysis()
         results = analysis.get_results()
         keyboard['total_distance'] = results['keyboards'][keyboard['layout']]
