@@ -10,6 +10,7 @@ from zipfile import ZipFile
 from datetime import datetime
 
 
+# TODO: allow different finger pos
 class _KeyboardTool:
     def __init__(self):
         self.layout = None
@@ -35,15 +36,15 @@ class _KeyboardTool:
             i += 1
 
 
+# TODO: allow for other mappings and distances. etc. probably with config file (command line arg?).
 class AnalyzeKeyboards:
-    def __init__(self, keyboards, dataset):
+    def __init__(self, dataset):
         self.__chars = 0
         self.__uncounted = 0
 
         self.__kb_tools = list()
         self.__finger_duty = None
         self.__cost_matrix = None
-        self.update_keyboards(keyboards)
 
         self.__dataset = dataset
         self.__zips = list()
@@ -92,6 +93,7 @@ class AnalyzeKeyboards:
         cost.update(dict.fromkeys([(3, 25), (5, 27)], g))
         self.__cost_matrix = cost
 
+    # TODO: find better way to get char and uncounted ONCE
     def _process_line(self, string):
         for char in string:
             if self.__store_dataset_names:
@@ -100,7 +102,7 @@ class AnalyzeKeyboards:
                 try:
                     destination = kb.mapping[char]
                 except KeyError:
-                    if self.__store_dataset_names:  # TODO: For some reason, this is an issue.
+                    if self.__store_dataset_names:
                         self.__uncounted += 1
                     continue
                 responsible_finger = self.__finger_duty[destination]
@@ -117,7 +119,7 @@ class AnalyzeKeyboards:
         self._init_finger_duty()
         self._init_cost_matrix()
         if not self.__kb_tools:
-            raise Exception("no keyboards initialized. use AnalyzeKeyboards.init_keyboards(list)")
+            raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
         for zip_path in self.__zips:
             with ZipFile(zip_path, 'r') as zipObj:
                 for file in zipObj.namelist():
@@ -127,7 +129,9 @@ class AnalyzeKeyboards:
                         with zipObj.open(file) as dataset:
                             while line := dataset.readline():
                                 self._process_line(line.decode()[:-1].lower())
-        self.__store_dataset_names = False
+        if self.__store_dataset_names:
+            self.__uncounted = int(self.__uncounted / len(self.__kb_tools))
+            self.__store_dataset_names = False
 
     def get_results(self):
         keyboards = {}
@@ -145,6 +149,7 @@ class AnalyzeKeyboards:
             'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         }
 
+
 # TODO: make is so while a keyboard is being analyzed if the distance is greater than previous best, stop -> save a
 #  bunch of time this will require some other things to be done. mostly index stuff. and changing parameters. maybe
 #  put process line (above in analyize and do one at time. change bias weights. anything to reduce time analyzing.
@@ -153,33 +158,34 @@ class GeneticKeyboards:
         self.__original = original
         self.__produce_simple = produce_simple
         self.__mutate_rate = mutation_rate
-        self.__save_stats = save_stats # TODO
+        self.__save_stats = save_stats  # TODO
         self.__gen_size = gen_size
         self.__delta = inf
         self.__epsilon = epsilon
-        self.__gen_number = 1
+        self.__gen_number = 0
         self.__current_gen_top_performance = 0
         self.__current_gen = [original]
         self.__current_results = None
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
-        self.__judge = AnalyzeKeyboards(self.__current_gen, dataset)
+        self.__judge = AnalyzeKeyboards(dataset)
         self._calculate_fitness()
+        self.__gen_number = 1
 
     def generate(self):
-        new_gen = list()
-        results = None
-        while self.__delta < self.__epsilon:
-            print(f"Generation: {self.__gen_number}")
+        while self.__delta > self.__epsilon:
+            new_gen = list()
             length = len(self.__original)
             weights = [length - i for i in range(0, self.__gen_size)]
-            parent_a, parent_b = choices(self.__current_gen, weights, k=2)
-            new_gen.append(self._crossover(parent_a, parent_b))
+            while len(new_gen) < self.__gen_size:
+                parent_a, parent_b = choices(self.__current_gen, weights, k=2)
+                new_gen.append(self._crossover(parent_a, parent_b))
+            self.__current_gen = new_gen
             self._calculate_fitness()
-            print(results)
+            self.__gen_number += 1
         simple = None
         if self.__produce_simple:
-            pass # TODO
+            pass  # TODO: produce a simplified version of the best one. probably another method.
         return {
                    'layout': self.__current_gen[0],
                    'total_distance': self.__current_results['keyboards'][self.__current_gen[0]],
@@ -192,11 +198,13 @@ class GeneticKeyboards:
 
     def _mutate(self, keyboard):
         length = len(keyboard)
-        while random() <= self.__mutate_rate:
+        mutation = True
+        while mutation:
             i1, i2 = randint(0, length - 1), randint(0, length - 1)
             old = keyboard[i1]
             keyboard[i1] = keyboard[i2]
             keyboard[i2] = old
+            mutation = random() <= self.__mutate_rate
         return keyboard
 
     def _crossover(self, parent_a, parent_b):
@@ -219,6 +227,7 @@ class GeneticKeyboards:
 
     def _calculate_fitness(self):
         print(F"Calculating fitness for generation {self.__gen_number}")
+        self.__judge.update_keyboards(self.__current_gen)
         self.__judge.preform_analysis()
         self.__current_results = self.__judge.get_results()
         self.__current_gen = [x for _, x in sorted(zip(self.__current_results['efficiencies'],
@@ -226,7 +235,7 @@ class GeneticKeyboards:
         top_preform = self.__current_results['efficiencies'][self.__current_gen[0]]
         self.__delta = abs(self.__current_gen_top_performance - top_preform)
         self.__current_gen_top_performance = top_preform
-        print(f"Top preform efficiency: {self.__current_gen_top_performance}")
+        print(f"Top preform efficiency: {self.__current_gen_top_performance} delta {self.__delta}")
 
 
 def show_keyboards(keyboard):
@@ -288,14 +297,15 @@ def main(argv):
         metavar="RATE",
         type=float,
         default=0.25,
-        help="Change the rate at which mutations occur. (Default: 0.25)"
+        help="Change the rate at which mutations occur. Each child will always mutate at least once, even if set to "
+             "0.0 to preserve diversity and avoid early convergence. (Default: 0.25) "
     )
     parser.add_argument(
         "-epsilon",
         metavar="EPSILON",
         type=float,
-        default=0.05,
-        help="Change the threshold of convergence. (Default: 0.05)"
+        default=0.005,
+        help="Change the threshold of convergence. (Default: 0.005)"
     )
     parser.add_argument(
         "-save_stats",
