@@ -1,2 +1,4 @@
-# Keyboard-Layouts
-# Keyboard-Layouts
+# KBMSTR
+30 key explination
+
+image

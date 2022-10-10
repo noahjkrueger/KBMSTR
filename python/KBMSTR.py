@@ -1,9 +1,7 @@
 import argparse
-from time import sleep
-
 import eel
 import os
-
+import multiprocessing as mp
 from math import inf
 from sys import argv
 from json import load, dump
@@ -129,17 +127,21 @@ class AnalyzeKeyboards:
         for zip_path in self.__zips:
             with ZipFile(zip_path, 'r') as zipObj:
                 filenamelist = zipObj.namelist()
-                for i in tqdm(range(0, len(filenamelist))):
-                    if '.txt' in filenamelist[i]:
-                        if self.__store_dataset_names:
-                            self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{filenamelist[i]}")
-                    for kb_tool in self.__kb_tools:
-                        with zipObj.open(filenamelist[i]) as dataset:
-                            while line := dataset.readline():
-                                self._process_line(line.decode()[:-1].lower(), kb_tool)
-                                if kb_tool.accumulated_cost > distance_limit: # TODO: maybe make better heuristic - store distances per file and skip then
-                                    kb_tool.accumulated_cost = inf
-                                    break
+                with tqdm(total=(len(filenamelist) * len(self.__kb_tools))) as pbar:
+                    for file in filenamelist:
+                        if '.txt' in file:
+                            if self.__store_dataset_names:
+                                self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
+                            for kb_tool in self.__kb_tools:
+                                with zipObj.open(file) as dataset:
+                                    while line := dataset.readline():
+                                        self._process_line(line.decode()[:-1].lower(), kb_tool)
+                                        if kb_tool.accumulated_cost > distance_limit: # TODO: maybe make better heuristic - store distances per file and skip then
+                                            kb_tool.accumulated_cost = inf
+                                            break
+                                pbar.update(1)
+                        else:
+                            pbar.update(len(self.__kb_tools))
         if self.__store_dataset_names:
             self.__chars = int(self.__chars / len(self.__kb_tools))
             self.__uncounted = int(self.__uncounted / len(self.__kb_tools))
@@ -166,7 +168,6 @@ class AnalyzeKeyboards:
         }
 
 
-
 class GeneticKeyboards:
     def __init__(self, original, dataset, produce_simple, gen_size,
                  epsilon, steps_to_converge, mutation_rate, save_stats):
@@ -183,9 +184,7 @@ class GeneticKeyboards:
         self.__current_gen_top_performance = inf
         self.__current_gen = [original]
         self.__current_results = None
-        print(f"-------------------GENERATION {self.__gen_number}\n"
-              f"Top preform efficiency: {self.__current_gen_top_performance}, "
-              f"delta={self.__delta}, steps={self.__num_steps}")
+        self._print_status()
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
         self.__judge = AnalyzeKeyboards(dataset)
@@ -193,11 +192,18 @@ class GeneticKeyboards:
         self._calculate_fitness()
         self.__gen_number = 1
 
+    def _print_status(self):
+        print(f"-------------------GENERATION {self.__gen_number:>4}\n"
+              f"Best Efficiency:{self.__current_gen_top_performance:>18}\n"
+              f"Δ:{self.__delta:>32}\n"
+              f"ε:{self.__epsilon:>32}\n"
+              f"Steps:{self.__num_steps:>26}/{self.__steps_to_converge}\n"
+              f"Generation Size: {self.__gen_size:>17}\n"
+              f"Mutation Rate:{self.__mutate_rate:>20}\n")
+
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
-            print(f"-------------------GENERATION {self.__gen_number}\n"
-                  f"Top preform efficiency: {self.__current_gen_top_performance}, "
-                  f"delta={self.__delta}, steps={self.__num_steps}")
+            self._print_status()
             new_gen = [self.__best_keyboard]
             weights = list()
             for i in range(0, self.__gen_size):
@@ -205,7 +211,6 @@ class GeneticKeyboards:
                     weights.append(0)
                 else:
                     weights.append((self.__gen_size - i)**2)
-            # weights = [(self.__gen_size - i)**2 for i in range(0, self.__gen_size)]
             while len(new_gen) < self.__gen_size:
                 parent_a, parent_b = choices(self.__current_gen, weights, k=2)
                 new_gen.append(self._crossover(parent_a, parent_b))
@@ -254,7 +259,7 @@ class GeneticKeyboards:
         return "".join(self._mutate(child))
 
     def _calculate_fitness(self):
-        print(F"Calculating fitness for generation {self.__gen_number} with generation size: {self.__gen_size}")
+        print(F"Calculating fitness...")
         self.__judge.update_keyboards(self.__current_gen)
         try:
             self.__judge.preform_analysis(min(self.__current_results['total_distances']))
