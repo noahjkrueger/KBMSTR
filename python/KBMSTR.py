@@ -119,9 +119,9 @@ class AnalyzeKeyboards:
         out_queue.put((tool.layout, tool.accumulated_cost))
 
     def _listener(self, q):
-        pbar = tqdm(total=len(self.__kb_tools))#*len(self.__filenames)) TODO: make this work
+        pbar = tqdm(total=len(self.__kb_tools))
         last_size = 0
-        while (size := q.qsize()) < len(self.__kb_tools):#*len(self.__filenames):
+        while (size := q.qsize()) < len(self.__kb_tools):
             pbar.update(size - last_size)
             last_size = size
 
@@ -195,13 +195,13 @@ class GeneticKeyboards:
         self.__gen_number = 1
 
     def _print_status(self):
-        print(f"-------------------GENERATION {self.__gen_number:>4}\n"
-              f"Best Efficiency:{self.__current_gen_top_performance:>18}\n"
-              f"Δ:{self.__delta:>32}\n"
-              f"ε:{self.__epsilon:>32}\n"
-              f"Steps:{self.__num_steps:>26}/{self.__steps_to_converge}\n"
-              f"Generation Size: {self.__gen_size:>17}\n"
-              f"Mutation Rate:{self.__mutate_rate:>20}\n")
+        print(f"---------------------GENERATION {self.__gen_number:>4}\n"
+              f"Best Efficiency:{self.__current_gen_top_performance:>20}\n"
+              f"Δ:{self.__delta:>34}\n"
+              f"ε:{self.__epsilon:>34}\n"
+              f"Steps:{self.__num_steps:>28}/{self.__steps_to_converge}\n"
+              f"Generation Size: {self.__gen_size:>19}\n"
+              f"Mutation Rate:{self.__mutate_rate:>22}\n")
 
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
