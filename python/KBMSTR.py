@@ -15,7 +15,7 @@ def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-# TODO: allow different finger pos
+# TODO: allow different finger pos -> .config see line 68
 class _KeyboardTool:
     def __init__(self):
         self.layout = None
@@ -67,6 +67,7 @@ class AnalyzeKeyboards:
             tool.set_layout(keyboard)
             self.__kb_tools[keyboard] = tool
 
+    #TODO: create one gian list() -> can ommit uncounted chars, add some character to indicate eof
     def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
             for file in files:
@@ -137,19 +138,18 @@ class AnalyzeKeyboards:
             with ZipFile(zip_path, 'r') as zipObj:
                 filenamelist = zipObj.namelist()
                 for file in filenamelist:
-                    if '.txt' in file:
-                        with zipObj.open(file) as dataset:
-                            while line := dataset.readline():
-                                self._process_line(line.decode()[:-1].lower(), tool)
-                                if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - store distances per file and skip then
-                                    tool.accumulated_cost = inf
-                                    break
-        out_queue.put(tool)
+                    with zipObj.open(file) as dataset:
+                        while line := dataset.readline():
+                            self._process_line(line.decode()[:-1].lower(), tool)
+                            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
+                                tool.accumulated_cost = inf
+                                break
+        out_queue.put((tool.layout, tool.accumulated_cost))
 
     def _listener(self, q):
-        pbar = tqdm(total=len(self.__kb_tools))
+        pbar = tqdm(total=len(self.__kb_tools))#*len(self.__filenames)) TODO: make this work
         last_size = 0
-        while (size := q.qsize()) < len(self.__kb_tools):
+        while (size := q.qsize()) < len(self.__kb_tools):#*len(self.__filenames):
             pbar.update(size - last_size)
             last_size = size
 
@@ -173,7 +173,10 @@ class AnalyzeKeyboards:
         print("Dumping Results")
         for i in tqdm(range(0, len(self.__kb_tools))):
             res = out_queue.get()
-            self.__kb_tools[res.layout].accumulated_cost = res.accumulated_cost
+            if res[1] == inf:
+                self.__kb_tools[res[0]].accumulated_cost = inf
+            else:
+                self.__kb_tools[res[0]].accumulated_cost = res[1]
         cls()
 
     def get_results(self):
@@ -298,7 +301,7 @@ class GeneticKeyboards:
                                                        self.__current_results['keyboards']), key=lambda pair: pair[0])]
         self.__best_keyboard = self.__current_gen[0]
         top_preform = min(self.__current_results['efficiencies'])
-        self.__delta = abs(self.__current_gen_top_performance - top_preform)
+        self.__delta = min(abs(self.__current_gen_top_performance - top_preform), top_preform)
         if self.__delta <= self.__epsilon:
             self.__num_steps += 1
         else:
