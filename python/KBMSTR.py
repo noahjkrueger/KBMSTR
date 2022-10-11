@@ -29,9 +29,9 @@ class _KeyboardTool:
     def set_layout(self, layout):
         self.layout = layout
         self._init_mapping(layout)
-        self._init_finger_pos()
+        self.init_finger_pos()
 
-    def _init_finger_pos(self):
+    def init_finger_pos(self):
         self.finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_i": 16, "r_m": 17, "r_r": 18, "r_p": 19}
 
     def _init_mapping(self, layout):
@@ -54,6 +54,7 @@ class AnalyzeKeyboards:
         self.__zips = list()
         self.__filenames = list()
         self.__dataset_names = list()
+        self.__dataset_chars = list()
         self._init_dataset(valid_chars)
 
         if self.__zips == list():
@@ -67,7 +68,6 @@ class AnalyzeKeyboards:
             tool.set_layout(keyboard)
             self.__kb_tools[keyboard] = tool
 
-    #TODO: create one gian list() -> can ommit uncounted chars, add some character to indicate eof
     def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
             for file in files:
@@ -87,6 +87,9 @@ class AnalyzeKeyboards:
                                         self.__chars += 1
                                         if char not in valid_chars:
                                             self.__uncounted += 1
+                                        else:
+                                            self.__dataset_chars.append(char)
+                            self.__dataset_chars.append(None)
                         pbar.update(1)
         cls()
 
@@ -115,35 +118,25 @@ class AnalyzeKeyboards:
         cost.update(dict.fromkeys([(3, 25), (5, 27)], g))
         self.__cost_matrix = cost
 
-    def _process_line(self, string, kb):
-        for char in string:
-            self.__chars += 1
+    def _analyze_thread(self, tool, out_queue, distance_limit):
+        for char in self.__dataset_chars:
             try:
-                destination = kb.mapping[char]
+                destination = tool.mapping[char]
             except KeyError:
-                self.__uncounted += 1
+                tool.init_finger_pos()
                 continue
             responsible_finger = self.__finger_duty[destination]
-            transition = (kb.finger_pos[responsible_finger], destination)
+            transition = (tool.finger_pos[responsible_finger], destination)
             if transition[0] == transition[1]:
                 continue
-            kb.finger_pos[responsible_finger] = destination
+            tool.finger_pos[responsible_finger] = destination
             try:
-                kb.accumulated_cost += self.__cost_matrix[transition]
+                tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
-                kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
-
-    def _analyze_thread(self, tool, out_queue, distance_limit):
-        for zip_path in self.__zips:
-            with ZipFile(zip_path, 'r') as zipObj:
-                filenamelist = zipObj.namelist()
-                for file in filenamelist:
-                    with zipObj.open(file) as dataset:
-                        while line := dataset.readline():
-                            self._process_line(line.decode()[:-1].lower(), tool)
-                            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
-                                tool.accumulated_cost = inf
-                                break
+                tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
+            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
+                tool.accumulated_cost = inf
+                break
         out_queue.put((tool.layout, tool.accumulated_cost))
 
     def _listener(self, q):
@@ -207,9 +200,10 @@ class GeneticKeyboards:
         self.__mutate_rate = mutation_rate
         self.__save_stats = save_stats  # TODO
         self.__gen_size = gen_size
-        self.__delta = inf
         self.__epsilon = epsilon
         self.__steps_to_converge = steps_to_converge
+
+        self.__delta = inf
         self.__num_steps = 0
         self.__gen_number = 0
         self.__current_gen_top_performance = inf
