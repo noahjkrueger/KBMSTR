@@ -15,7 +15,7 @@ def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-# TODO: allow different finger pos
+# TODO: allow different finger pos -> .config see line 68
 class _KeyboardTool:
     def __init__(self):
         self.layout = None
@@ -43,35 +43,52 @@ class _KeyboardTool:
 
 # TODO: allow for other mappings and distances. etc. probably with config file (command line arg?).
 class AnalyzeKeyboards:
-    def __init__(self, dataset):
-        self.__chars = 0
-        self.__uncounted = 0
-
-        self.__kb_tools = list()
+    def __init__(self, dataset, valid_chars):
+        self.__kb_tools = {}
         self.__finger_duty = None
         self.__cost_matrix = None
 
         self.__dataset = dataset
+        self.__chars = 0
+        self.__uncounted = 0
         self.__zips = list()
+        self.__filenames = list()
         self.__dataset_names = list()
-        self._init_zip_list()
+        self._init_dataset(valid_chars)
+
         if self.__zips == list():
             raise Exception(f"No .zip files found in directory {self.__dataset}. Please provide the -dataset arg with a"
                             f" directory that contains .zip compressed archives of .txt files.")
-        self.__store_dataset_names = True
 
     def update_keyboards(self, keyboards):
-        self.__kb_tools = list()
+        self.__kb_tools = {}
         for keyboard in keyboards:
             tool = _KeyboardTool()
             tool.set_layout(keyboard)
-            self.__kb_tools.append(tool)
+            self.__kb_tools[keyboard] = tool
 
-    def _init_zip_list(self):
+    #TODO: create one gian list() -> can ommit uncounted chars, add some character to indicate eof
+    def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
             for file in files:
                 if '.zip' in file:
                     self.__zips.append(os.path.join(root, file))
+        for zip_path in self.__zips:
+            with ZipFile(zip_path, 'r') as zipObj:
+                filenamelist = zipObj.namelist()
+                print(f"Initializing datasets from {zip_path}")
+                with tqdm(total=len(filenamelist)) as pbar:
+                    for file in filenamelist:
+                        if '.txt' in file:
+                            self.__filenames.append(file)
+                            with zipObj.open(file) as dataset:
+                                while line := dataset.readline():
+                                    for char in line.decode()[:-1].lower():
+                                        self.__chars += 1
+                                        if char not in valid_chars:
+                                            self.__uncounted += 1
+                        pbar.update(1)
+        cls()
 
     def _init_finger_duty(self):
         finger_duty = dict.fromkeys([0, 10, 21], "l_p")
@@ -100,13 +117,11 @@ class AnalyzeKeyboards:
 
     def _process_line(self, string, kb):
         for char in string:
-            if self.__store_dataset_names:
-                self.__chars += 1
+            self.__chars += 1
             try:
                 destination = kb.mapping[char]
             except KeyError:
-                if self.__store_dataset_names:
-                    self.__uncounted += 1
+                self.__uncounted += 1
                 continue
             responsible_finger = self.__finger_duty[destination]
             transition = (kb.finger_pos[responsible_finger], destination)
@@ -118,41 +133,57 @@ class AnalyzeKeyboards:
             except KeyError:
                 kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
 
+    def _analyze_thread(self, tool, out_queue, distance_limit):
+        for zip_path in self.__zips:
+            with ZipFile(zip_path, 'r') as zipObj:
+                filenamelist = zipObj.namelist()
+                for file in filenamelist:
+                    with zipObj.open(file) as dataset:
+                        while line := dataset.readline():
+                            self._process_line(line.decode()[:-1].lower(), tool)
+                            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
+                                tool.accumulated_cost = inf
+                                break
+        out_queue.put((tool.layout, tool.accumulated_cost))
+
+    def _listener(self, q):
+        pbar = tqdm(total=len(self.__kb_tools))#*len(self.__filenames)) TODO: make this work
+        last_size = 0
+        while (size := q.qsize()) < len(self.__kb_tools):#*len(self.__filenames):
+            pbar.update(size - last_size)
+            last_size = size
+
     def preform_analysis(self, distance_limit):
         print(f"Using distance limit {distance_limit} to speed things up")
         self._init_finger_duty()
         self._init_cost_matrix()
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
-        for zip_path in self.__zips:
-            with ZipFile(zip_path, 'r') as zipObj:
-                filenamelist = zipObj.namelist()
-                with tqdm(total=(len(filenamelist) * len(self.__kb_tools))) as pbar:
-                    for file in filenamelist:
-                        if '.txt' in file:
-                            if self.__store_dataset_names:
-                                self.__dataset_names.append(f"{zip_path.split('/')[-1]}/{file}")
-                            for kb_tool in self.__kb_tools:
-                                with zipObj.open(file) as dataset:
-                                    while line := dataset.readline():
-                                        self._process_line(line.decode()[:-1].lower(), kb_tool)
-                                        if kb_tool.accumulated_cost > distance_limit: # TODO: maybe make better heuristic - store distances per file and skip then
-                                            kb_tool.accumulated_cost = inf
-                                            break
-                                pbar.update(1)
-                        else:
-                            pbar.update(len(self.__kb_tools))
-        if self.__store_dataset_names:
-            self.__chars = int(self.__chars / len(self.__kb_tools))
-            self.__uncounted = int(self.__uncounted / len(self.__kb_tools))
-            self.__store_dataset_names = False
+        out_queue = mp.Queue()
+        proc = mp.Process(target=self._listener, args=(out_queue, ))
+        proc.start()
+        workers = []
+        for kb in self.__kb_tools.keys():
+            workers.append(mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limit)))
+        for worker in workers:
+            worker.start()
+        for worker in workers:
+            worker.join()
+        proc.join()
+        print("Dumping Results")
+        for i in tqdm(range(0, len(self.__kb_tools))):
+            res = out_queue.get()
+            if res[1] == inf:
+                self.__kb_tools[res[0]].accumulated_cost = inf
+            else:
+                self.__kb_tools[res[0]].accumulated_cost = res[1]
         cls()
 
     def get_results(self):
         keyboards = list()
         total_distances = list()
         efficiencies = list()
-        for kb in self.__kb_tools:
+        for kb in self.__kb_tools.values():
             layout, total_cost = kb.get_info()
             keyboards.append(layout)
             total_distances.append(total_cost)
@@ -184,11 +215,11 @@ class GeneticKeyboards:
         self.__current_gen_top_performance = inf
         self.__current_gen = [original]
         self.__current_results = None
-        self._print_status()
+        self.__judge = AnalyzeKeyboards(dataset, original)
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
-        self.__judge = AnalyzeKeyboards(dataset)
         self.__best_keyboard = None
+        self._print_status()
         self._calculate_fitness()
         self.__gen_number = 1
 
@@ -270,7 +301,7 @@ class GeneticKeyboards:
                                                        self.__current_results['keyboards']), key=lambda pair: pair[0])]
         self.__best_keyboard = self.__current_gen[0]
         top_preform = min(self.__current_results['efficiencies'])
-        self.__delta = abs(self.__current_gen_top_performance - top_preform)
+        self.__delta = min(abs(self.__current_gen_top_performance - top_preform), top_preform)
         if self.__delta <= self.__epsilon:
             self.__num_steps += 1
         else:
