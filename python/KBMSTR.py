@@ -15,12 +15,12 @@ def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-# TODO: allow different finger pos -> .config see line 68
 class _KeyboardTool:
-    def __init__(self):
+    def __init__(self, og_finger_pos):
         self.layout = None
         self.mapping = {}
-        self.finger_pos = None
+        self.__og_finger_pos = og_finger_pos
+        self.finger_pos = og_finger_pos
         self.accumulated_cost = 0
 
     def get_info(self):
@@ -28,25 +28,21 @@ class _KeyboardTool:
 
     def set_layout(self, layout):
         self.layout = layout
-        self._init_mapping(layout)
-        self._init_finger_pos()
-
-    def _init_finger_pos(self):
-        self.finger_pos = {"l_p": 10, "l_r": 11, "l_m": 12, "l_i": 13, "r_i": 16, "r_m": 17, "r_r": 18, "r_p": 19}
-
-    def _init_mapping(self, layout):
         i = 0
         for char in layout:
             self.mapping[char] = i
             i += 1
 
+    def reset_finger_pos(self):
+        self.finger_pos = self.__og_finger_pos
 
-# TODO: allow for other mappings and distances. etc. probably with config file (command line arg?).
+
 class AnalyzeKeyboards:
-    def __init__(self, dataset, valid_chars):
+    def __init__(self, dataset, valid_chars, config):
         self.__kb_tools = {}
         self.__finger_duty = None
         self.__cost_matrix = None
+        self.__og_finger_pos = None
 
         self.__dataset = dataset
         self.__chars = 0
@@ -54,6 +50,8 @@ class AnalyzeKeyboards:
         self.__zips = list()
         self.__filenames = list()
         self.__dataset_names = list()
+        self.__dataset_chars = list()
+        self._init_config(config)
         self._init_dataset(valid_chars)
 
         if self.__zips == list():
@@ -63,11 +61,17 @@ class AnalyzeKeyboards:
     def update_keyboards(self, keyboards):
         self.__kb_tools = {}
         for keyboard in keyboards:
-            tool = _KeyboardTool()
+            tool = _KeyboardTool(self.__og_finger_pos)
             tool.set_layout(keyboard)
             self.__kb_tools[keyboard] = tool
 
-    #TODO: create one gian list() -> can ommit uncounted chars, add some character to indicate eof
+    def _init_config(self, config):
+        with open(config, 'r') as cfg:
+            dic = eval(cfg.read())
+            self.__finger_duty = eval(dic['finger_duty'])
+            self.__cost_matrix = eval(dic['cost_matrix'])
+            self.__og_finger_pos = eval(dic['finger_pos'])
+
     def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
             for file in files:
@@ -87,63 +91,31 @@ class AnalyzeKeyboards:
                                         self.__chars += 1
                                         if char not in valid_chars:
                                             self.__uncounted += 1
+                                        else:
+                                            self.__dataset_chars.append(char)
+                            self.__dataset_chars.append(None)
                         pbar.update(1)
         cls()
 
-    def _init_finger_duty(self):
-        finger_duty = dict.fromkeys([0, 10, 21], "l_p")
-        finger_duty.update(dict.fromkeys([1, 11, 22], "l_r"))
-        finger_duty.update(dict.fromkeys([2, 12, 23], "l_m"))
-        finger_duty.update(dict.fromkeys([3, 4, 13, 14, 24, 25], "l_i"))
-        finger_duty.update(dict.fromkeys([5, 6, 15, 16, 26, 27], "r_i"))
-        finger_duty.update(dict.fromkeys([7, 17, 28], "r_m"))
-        finger_duty.update(dict.fromkeys([8, 18, 29], "r_r"))
-        finger_duty.update(dict.fromkeys([9, 19, 20, 30], "r_p"))
-        self.__finger_duty = finger_duty
-
-    def _init_cost_matrix(self):
-        a, b, c, d, e, f, g = 1.0, 1.031, 2.062, 2.016, 1.118, 1.6, 2.5
-        cost = dict.fromkeys([(3, 4), (13, 14), (24, 25), (5, 6), (15, 16), (26, 27), (19, 20)], a)
-        cost.update(dict.fromkeys([(0, 10), (1, 11), (2, 12), (3, 13), (4, 14), (5, 15), (6, 16),
-                                   (7, 17), (8, 18), (9, 19), (10, 21), (11, 22), (12, 23), (13, 24),
-                                   (14, 25), (15, 26), (16, 27), (17, 28), (18, 29), (19, 30)], b))
-        cost.update(dict.fromkeys([(0, 21), (1, 22), (2, 23), (3, 24), (4, 25), (5, 26), (6, 27),
-                                   (7, 28), (8, 29), (9, 30)], c))
-        cost.update(dict.fromkeys([(4, 24), (6, 26)], d))
-        cost.update(dict.fromkeys([(4, 13), (6, 15), (14, 24), (16, 26), (20, 30)], e))
-        cost.update(dict.fromkeys([(3, 14), (13, 25), (5, 16), (15, 27), (9, 20)], f))
-        cost.update(dict.fromkeys([(3, 25), (5, 27)], g))
-        self.__cost_matrix = cost
-
-    def _process_line(self, string, kb):
-        for char in string:
-            self.__chars += 1
+    def _analyze_thread(self, tool, out_queue, distance_limit):
+        for char in self.__dataset_chars:
             try:
-                destination = kb.mapping[char]
+                destination = tool.mapping[char]
             except KeyError:
-                self.__uncounted += 1
+                tool.reset_finger_pos()
                 continue
             responsible_finger = self.__finger_duty[destination]
-            transition = (kb.finger_pos[responsible_finger], destination)
+            transition = (tool.finger_pos[responsible_finger], destination)
             if transition[0] == transition[1]:
                 continue
-            kb.finger_pos[responsible_finger] = destination
+            tool.finger_pos[responsible_finger] = destination
             try:
-                kb.accumulated_cost += self.__cost_matrix[transition]
+                tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
-                kb.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
-
-    def _analyze_thread(self, tool, out_queue, distance_limit):
-        for zip_path in self.__zips:
-            with ZipFile(zip_path, 'r') as zipObj:
-                filenamelist = zipObj.namelist()
-                for file in filenamelist:
-                    with zipObj.open(file) as dataset:
-                        while line := dataset.readline():
-                            self._process_line(line.decode()[:-1].lower(), tool)
-                            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
-                                tool.accumulated_cost = inf
-                                break
+                tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
+            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
+                tool.accumulated_cost = inf
+                break
         out_queue.put((tool.layout, tool.accumulated_cost))
 
     def _listener(self, q):
@@ -155,8 +127,6 @@ class AnalyzeKeyboards:
 
     def preform_analysis(self, distance_limit):
         print(f"Using distance limit {distance_limit} to speed things up")
-        self._init_finger_duty()
-        self._init_cost_matrix()
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
         out_queue = mp.Queue()
@@ -200,22 +170,23 @@ class AnalyzeKeyboards:
 
 
 class GeneticKeyboards:
-    def __init__(self, original, dataset, produce_simple, gen_size,
+    def __init__(self, original, dataset, config, produce_simple, gen_size,
                  epsilon, steps_to_converge, mutation_rate, save_stats):
         self.__original = original
         self.__produce_simple = produce_simple
         self.__mutate_rate = mutation_rate
         self.__save_stats = save_stats  # TODO
         self.__gen_size = gen_size
-        self.__delta = inf
         self.__epsilon = epsilon
         self.__steps_to_converge = steps_to_converge
+
+        self.__delta = inf
         self.__num_steps = 0
         self.__gen_number = 0
         self.__current_gen_top_performance = inf
         self.__current_gen = [original]
         self.__current_results = None
-        self.__judge = AnalyzeKeyboards(dataset, original)
+        self.__judge = AnalyzeKeyboards(dataset, original, config)
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
         self.__best_keyboard = None
@@ -334,6 +305,12 @@ def main(argv):
         help="Name of the keyboard layout to improve upon, stored in /keyboards."
     )
     parser.add_argument(
+        "config",
+        type=str,
+        help="Name of the config JSON to initialize the cost matrix, finger responsibilities and initial finger "
+             "positions. "
+    )
+    parser.add_argument(
         "-dataset",
         metavar="DATASET",
         type=str,
@@ -401,6 +378,7 @@ def main(argv):
         help="Create a visual display of the keyboard inputted. Ignores all other options."
     )
     cls()
+
     args = parser.parse_args(argv)
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
@@ -410,7 +388,7 @@ def main(argv):
     if not args.dataset:
         raise Exception("A dataset is required for this action.")
     if args.analyze:
-        analysis = AnalyzeKeyboards(args.dataset)
+        analysis = AnalyzeKeyboards(args.dataset, keyboard['layout'], args.config)
         analysis.update_keyboards([keyboard['layout']])
         analysis.preform_analysis(inf)
         results = analysis.get_results()
@@ -423,7 +401,7 @@ def main(argv):
         with open(args.keyboard, "w") as json_file:
             dump(keyboard, json_file)
         exit()
-    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.simplify, args.gen_size,
+    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.config, args.simplify, args.gen_size,
                                  args.epsilon, args.steps_to_converge, args.mutation_rate, args.save_stats)
     raw, simplified = generator.generate()
     with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw.json", "w") as json_file:
