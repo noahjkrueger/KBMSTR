@@ -2,12 +2,16 @@ import argparse
 import eel
 import os
 import multiprocessing as mp
+import matplotlib.pyplot as plot
+
 from math import inf
 from sys import argv
 from json import load, dump
 from random import sample, random, choices, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
+
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
@@ -97,6 +101,7 @@ class AnalyzeKeyboards:
                         pbar.update(1)
         cls()
 
+    # TODO: add char checkpoints -> create for each, save best -> distance_limits, nchars
     def _analyze_thread(self, tool, out_queue, distance_limit):
         for char in self.__dataset_chars:
             try:
@@ -113,15 +118,15 @@ class AnalyzeKeyboards:
                 tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
                 tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
-            if tool.accumulated_cost > distance_limit:  # TODO: maybe make better heuristic - check every n chars if doing better or nah (within some ratio)
+            if tool.accumulated_cost > distance_limit:
                 tool.accumulated_cost = inf
                 break
         out_queue.put((tool.layout, tool.accumulated_cost))
 
     def _listener(self, q):
-        pbar = tqdm(total=len(self.__kb_tools))#*len(self.__filenames)) TODO: make this work
+        pbar = tqdm(total=len(self.__kb_tools))
         last_size = 0
-        while (size := q.qsize()) < len(self.__kb_tools):#*len(self.__filenames):
+        while (size := q.qsize()) < len(self.__kb_tools):
             pbar.update(size - last_size)
             last_size = size
 
@@ -130,11 +135,12 @@ class AnalyzeKeyboards:
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
         out_queue = mp.Queue()
-        proc = mp.Process(target=self._listener, args=(out_queue, ))
+        proc = mp.Process(target=self._listener, args=(out_queue,))
         proc.start()
         workers = []
         for kb in self.__kb_tools.keys():
-            workers.append(mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limit)))
+            workers.append(
+                mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limit)))
         for worker in workers:
             worker.start()
         for worker in workers:
@@ -175,7 +181,9 @@ class GeneticKeyboards:
         self.__original = original
         self.__produce_simple = produce_simple
         self.__mutate_rate = mutation_rate
-        self.__save_stats = save_stats  # TODO
+        self.__save_stats = save_stats
+        if save_stats:
+            self.__stats_best = []
         self.__gen_size = gen_size
         self.__epsilon = epsilon
         self.__steps_to_converge = steps_to_converge
@@ -195,13 +203,13 @@ class GeneticKeyboards:
         self.__gen_number = 1
 
     def _print_status(self):
-        print(f"-------------------GENERATION {self.__gen_number:>4}\n"
-              f"Best Efficiency:{self.__current_gen_top_performance:>18}\n"
-              f"Δ:{self.__delta:>32}\n"
-              f"ε:{self.__epsilon:>32}\n"
-              f"Steps:{self.__num_steps:>26}/{self.__steps_to_converge}\n"
-              f"Generation Size: {self.__gen_size:>17}\n"
-              f"Mutation Rate:{self.__mutate_rate:>20}\n")
+        print(f"---------------------GENERATION {self.__gen_number:>4}\n"
+              f"Best Efficiency:{self.__current_gen_top_performance:>20}\n"
+              f"Δ:{self.__delta:>34}\n"
+              f"ε:{self.__epsilon:>34}\n"
+              f"Steps:{self.__num_steps:>28}/{self.__steps_to_converge}\n"
+              f"Generation Size: {self.__gen_size:>19}\n"
+              f"Mutation Rate:{self.__mutate_rate:>22}\n")
 
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
@@ -212,7 +220,7 @@ class GeneticKeyboards:
                 if self.__current_results['efficiencies'][i] == inf:
                     weights.append(0)
                 else:
-                    weights.append((self.__gen_size - i)**2)
+                    weights.append((self.__gen_size - i) ** 2)
             while len(new_gen) < self.__gen_size:
                 parent_a, parent_b = choices(self.__current_gen, weights, k=2)
                 new_gen.append(self._crossover(parent_a, parent_b))
@@ -221,7 +229,21 @@ class GeneticKeyboards:
             self.__gen_number += 1
         simple = None
         if self.__produce_simple:
-            pass  # TODO: produce a simplified version of the best one. probably another method.
+            pass
+            # TODO: produce a simplified version of the best one. Balance similarity and effeciency -> max(sim*eff) genetic? maybe swap keys around, sim = dist in keys?
+        if self.__save_stats:
+            plt.plot([i for i in range(0, self.__gen_number)], self.__stats_best, label='Raw')
+            if self.__produce_simple:
+                plt.plot(self.__gen_number - 1, self.__current_gen_top_performance, marker=".", # sTODO: change for simp
+                         markersize=12, label='Simple')
+            plt.text(0, self.__stats_best[0],
+                        f"Best:{self.__current_gen_top_performance:>3f} "
+                        f"ε:{self.__epsilon} "
+                        f"Steps:{self.__num_steps} "
+                        f"Gen Size: {self.__gen_size} "
+                        f"Mutation Rate:{self.__mutate_rate}",
+                        fontsize=8,
+                        bbox={"facecolor": "white", "pad": 2})
         return {
                    'layout': self.__best_keyboard,
                    'total_distance': self.__current_results['total_distances'][0],
@@ -278,6 +300,8 @@ class GeneticKeyboards:
         else:
             self.__num_steps = 0
         self.__current_gen_top_performance = top_preform
+        if self.__save_stats:
+            self.__stats_best.append(top_preform)
 
 
 def show_keyboards(keyboard):
@@ -292,7 +316,7 @@ def show_keyboards(keyboard):
     eel.start('index.html', size=(1000, 700))
 
 
-def main(argv):
+def main(args):
     parser = argparse.ArgumentParser(
         prog="python3 KBMSTR.py",
         description="KBMSTR: Keyboard Master - Find the best keyboard for an input dataset using a genetic algorithm.",
@@ -379,7 +403,7 @@ def main(argv):
     )
     cls()
 
-    args = parser.parse_args(argv)
+    args = parser.parse_args(args)
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
     if args.display:
@@ -404,6 +428,13 @@ def main(argv):
     generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.config, args.simplify, args.gen_size,
                                  args.epsilon, args.steps_to_converge, args.mutation_rate, args.save_stats)
     raw, simplified = generator.generate()
+    if args.save_stats:
+        plt.title(f"Efficiency by Generation ({args.name if args.name else raw['last_analysis']})")
+        plt.xlabel("Generation Number")
+        plt.ylabel("Distance/Keystroke")
+        plt.legend()
+        plt.grid()
+        plt.savefig(f"run_stats/{args.name if args.name else raw['last_analysis']}.genstats.png")
     with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw.json", "w") as json_file:
         raw['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
         dump(raw, json_file)
