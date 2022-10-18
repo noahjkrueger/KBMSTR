@@ -2,7 +2,7 @@ import argparse
 import eel
 import os
 import multiprocessing as mp
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 
 from math import inf
 from sys import argv
@@ -10,8 +10,6 @@ from json import load, dump
 from random import sample, random, choices, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
-
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
@@ -26,9 +24,10 @@ class _KeyboardTool:
         self.__og_finger_pos = og_finger_pos
         self.finger_pos = og_finger_pos
         self.accumulated_cost = 0
+        self.checkpoints = []
 
     def get_info(self):
-        return self.layout, self.accumulated_cost
+        return self.layout, self.accumulated_cost, self.checkpoints
 
     def set_layout(self, layout):
         self.layout = layout
@@ -49,12 +48,11 @@ class AnalyzeKeyboards:
         self.__og_finger_pos = None
 
         self.__dataset = dataset
-        self.__chars = 0
-        self.__uncounted = 0
+        self.chars = 0
+        self.uncounted = 0
         self.__zips = list()
-        self.__filenames = list()
-        self.__dataset_names = list()
-        self.__dataset_chars = list()
+        self.filenames = list()
+        self.dataset_chars = list()
         self._init_config(config)
         self._init_dataset(valid_chars)
 
@@ -81,29 +79,33 @@ class AnalyzeKeyboards:
             for file in files:
                 if '.zip' in file:
                     self.__zips.append(os.path.join(root, file))
-        for zip_path in self.__zips:
-            with ZipFile(zip_path, 'r') as zipObj:
-                filenamelist = zipObj.namelist()
-                print(f"Initializing datasets from {zip_path}")
-                with tqdm(total=len(filenamelist)) as pbar:
-                    for file in filenamelist:
-                        if '.txt' in file:
-                            self.__filenames.append(file)
-                            with zipObj.open(file) as dataset:
-                                while line := dataset.readline():
-                                    for char in line.decode()[:-1].lower():
-                                        self.__chars += 1
-                                        if char not in valid_chars:
-                                            self.__uncounted += 1
-                                        else:
-                                            self.__dataset_chars.append(char)
-                            self.__dataset_chars.append(None)
-                        pbar.update(1)
+        print(f"Initializing dataset(s) from {self.__dataset}\n")
+        with tqdm(total=len(self.__zips)) as pbar1:
+            for zip_path in self.__zips:
+                with ZipFile(zip_path, 'r') as zipObj:
+                    filenamelist = zipObj.namelist()
+                    print(f"Initializing dataset {zip_path}")
+                    with tqdm(total=len(filenamelist)) as pbar2:
+                        for file in filenamelist:
+                            if '.txt' in file:
+                                self.filenames.append(file)
+                                with zipObj.open(file) as dataset:
+                                    while line := dataset.readline():
+                                        for char in line.decode()[:-1].lower():
+                                            self.chars += 1
+                                            if char not in valid_chars:
+                                                self.uncounted += 1
+                                            else:
+                                                self.dataset_chars.append(char)
+                                self.dataset_chars.append(None)
+                            pbar2.update(1)
+                pbar1.update(1)
         cls()
 
-    # TODO: add char checkpoints -> create for each, save best -> distance_limits, nchars
-    def _analyze_thread(self, tool, out_queue, distance_limit):
-        for char in self.__dataset_chars:
+    def _analyze_thread(self, tool, out_queue, distance_limits):
+        chk = len(self.dataset_chars) // len(distance_limits)
+        count = 0
+        for char in self.dataset_chars:
             try:
                 destination = tool.mapping[char]
             except KeyError:
@@ -118,10 +120,14 @@ class AnalyzeKeyboards:
                 tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
                 tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
-            if tool.accumulated_cost > distance_limit:
-                tool.accumulated_cost = inf
-                break
-        out_queue.put((tool.layout, tool.accumulated_cost))
+            if count % chk == 0:
+                if tool.accumulated_cost > 0.95 * (distance_limits[count // chk]):
+                    tool.accumulated_cost = inf
+                    break
+                else:
+                    tool.checkpoints.append(tool.accumulated_cost)
+            count += 1
+        out_queue.put((tool.layout, tool.accumulated_cost, tool.checkpoints))
 
     def _listener(self, q):
         pbar = tqdm(total=len(self.__kb_tools))
@@ -130,8 +136,7 @@ class AnalyzeKeyboards:
             pbar.update(size - last_size)
             last_size = size
 
-    def preform_analysis(self, distance_limit):
-        print(f"Using distance limit {distance_limit} to speed things up")
+    def preform_analysis(self, distance_limits):
         if not self.__kb_tools:
             raise Exception("no keyboards initialized. use AnalyzeKeyboards.update_keyboards(list)")
         out_queue = mp.Queue()
@@ -140,50 +145,33 @@ class AnalyzeKeyboards:
         workers = []
         for kb in self.__kb_tools.keys():
             workers.append(
-                mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limit)))
+                mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limits)))
         for worker in workers:
             worker.start()
         for worker in workers:
             worker.join()
         proc.join()
-        print("Dumping Results")
-        for i in tqdm(range(0, len(self.__kb_tools))):
+        for i in range(0, len(self.__kb_tools)):
             res = out_queue.get()
             if res[1] == inf:
                 self.__kb_tools[res[0]].accumulated_cost = inf
             else:
                 self.__kb_tools[res[0]].accumulated_cost = res[1]
+                self.__kb_tools[res[0]].checkpoints = res[2] # TODO: do this after
         cls()
 
-    def get_results(self):
-        keyboards = list()
-        total_distances = list()
-        efficiencies = list()
-        for kb in self.__kb_tools.values():
-            layout, total_cost = kb.get_info()
-            keyboards.append(layout)
-            total_distances.append(total_cost)
-            efficiencies.append(total_cost / (self.__chars - self.__uncounted))
-        return {
-            'keyboards': keyboards,
-            'total_distances': total_distances,
-            'total_chars': self.__chars,
-            'total_uncounted': self.__uncounted,
-            'efficiencies': efficiencies,
-            'dataset_names': self.__dataset_names,
-            'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-        }
+    def get_keyboards(self):
+        return self.__kb_tools.values()
 
 
 class GeneticKeyboards:
-    def __init__(self, original, dataset, config, produce_simple, gen_size,
+    def __init__(self, original, dataset, char_checkpoint, config, produce_simple, gen_size,
                  epsilon, steps_to_converge, mutation_rate, save_stats):
         self.__original = original
         self.__produce_simple = produce_simple
         self.__mutate_rate = mutation_rate
         self.__save_stats = save_stats
-        if save_stats:
-            self.__stats_best = []
+        self.__stats_best = []
         self.__gen_size = gen_size
         self.__epsilon = epsilon
         self.__steps_to_converge = steps_to_converge
@@ -191,14 +179,17 @@ class GeneticKeyboards:
         self.__delta = inf
         self.__num_steps = 0
         self.__gen_number = 0
+
         self.__current_gen_top_performance = inf
         self.__current_gen = [original]
-        self.__current_results = None
-        self.__judge = AnalyzeKeyboards(dataset, original, config)
         for i in range(1, gen_size):
             self.__current_gen.append(''.join(sample(original, len(original))))
+
+        self.__current_results = None
+        self.__judge = AnalyzeKeyboards(dataset, original, config)
+        self.__checkpoints = [inf for i in range(0, len(self.__judge.dataset_chars) // char_checkpoint)]
         self.__best_keyboard = None
-        self._print_status()
+        print("Calculating Fitness for Generation 0 (This may take a long time - depending on dataset size)")
         self._calculate_fitness()
         self.__gen_number = 1
 
@@ -209,7 +200,8 @@ class GeneticKeyboards:
               f"ε:{self.__epsilon:>34}\n"
               f"Steps:{self.__num_steps:>28}/{self.__steps_to_converge}\n"
               f"Generation Size: {self.__gen_size:>19}\n"
-              f"Mutation Rate:{self.__mutate_rate:>22}\n")
+              f"Mutation Rate:{self.__mutate_rate:>22}\n\n"
+              f"Calculating fitness... Using {len(self.__checkpoints)} checkpoints to speed things up")
 
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
@@ -217,7 +209,7 @@ class GeneticKeyboards:
             new_gen = [self.__best_keyboard]
             weights = list()
             for i in range(0, self.__gen_size):
-                if self.__current_results['efficiencies'][i] == inf:
+                if self.__current_results[i].accumulated_cost == inf:
                     weights.append(0)
                 else:
                     weights.append((self.__gen_size - i) ** 2)
@@ -234,24 +226,24 @@ class GeneticKeyboards:
         if self.__save_stats:
             plt.plot([i for i in range(0, self.__gen_number)], self.__stats_best, label='Raw')
             if self.__produce_simple:
-                plt.plot(self.__gen_number - 1, self.__current_gen_top_performance, marker=".", # sTODO: change for simp
+                plt.plot(self.__gen_number - 1, self.__current_gen_top_performance, marker=".",  # TODO: change for simp
                          markersize=12, label='Simple')
             plt.text(0, self.__stats_best[0],
-                        f"Best:{self.__current_gen_top_performance:>3f} "
-                        f"ε:{self.__epsilon} "
-                        f"Steps:{self.__num_steps} "
-                        f"Gen Size: {self.__gen_size} "
-                        f"Mutation Rate:{self.__mutate_rate}",
-                        fontsize=8,
-                        bbox={"facecolor": "white", "pad": 2})
+                     f"Best:{self.__current_gen_top_performance:>3f}, "
+                     f"ε:{self.__epsilon}, "
+                     f"Steps:{self.__num_steps}, "
+                     f"Gen Size: {self.__gen_size}, "
+                     f"Mutation Rate:{self.__mutate_rate}",
+                     fontsize=8,
+                     bbox={"facecolor": "white", "pad": 2})
         return {
                    'layout': self.__best_keyboard,
-                   'total_distance': self.__current_results['total_distances'][0],
-                   'total_chars': self.__current_results['total_chars'],
-                   'total_uncounted': self.__current_results['total_uncounted'],
-                   'efficiency': self.__current_results['efficiencies'][0],
-                   'dataset_names': self.__current_results['dataset_names'],
-                   'last_analysis': self.__current_results['last_analysis']
+                   'total_distance': self.__current_results[0].accumulated_cost,
+                   'total_chars': self.__judge.chars,
+                   'total_uncounted': self.__judge.uncounted,
+                   'efficiency': self.__current_results[0].accumulated_cost / (self.__judge.chars - self.__judge.uncounted),
+                   'dataset_names': self.__judge.filenames,
+                   'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
                }, simple
 
     def _mutate(self, keyboard):
@@ -283,17 +275,12 @@ class GeneticKeyboards:
         return "".join(self._mutate(child))
 
     def _calculate_fitness(self):
-        print(F"Calculating fitness...")
         self.__judge.update_keyboards(self.__current_gen)
-        try:
-            self.__judge.preform_analysis(min(self.__current_results['total_distances']))
-        except TypeError:
-            self.__judge.preform_analysis(inf)
-        self.__current_results = self.__judge.get_results()
-        self.__current_gen = [x for _, x in sorted(zip(self.__current_results['efficiencies'],
-                                                       self.__current_results['keyboards']), key=lambda pair: pair[0])]
-        self.__best_keyboard = self.__current_gen[0]
-        top_preform = min(self.__current_results['efficiencies'])
+        self.__judge.preform_analysis(self.__checkpoints)
+        self.__current_results = sorted(self.__judge.get_keyboards(), key=lambda x: x.accumulated_cost / (self.__judge.chars - self.__judge.uncounted))
+        self.__current_gen = [x.layout for x in self.__current_results]
+        self.__best_keyboard = self.__current_results[0].layout
+        top_preform = self.__current_results[0].accumulated_cost / (self.__judge.chars - self.__judge.uncounted)
         self.__delta = min(abs(self.__current_gen_top_performance - top_preform), top_preform)
         if self.__delta <= self.__epsilon:
             self.__num_steps += 1
@@ -344,6 +331,14 @@ def main(args):
              "Directories of multiple .zip collections are allowed."
     )
     parser.add_argument(
+        "-char_checkpoint",
+        metavar="SIZE",
+        type=int,
+        default=100000,
+        help="Create character checkpoints for large datasets. For each keyboard, disregaurd if the total distance is "
+             "greater than the 0.95 * last best total distance at every [char_checkpoint] number of characters."
+    )
+    parser.add_argument(
         "-name",
         metavar="NAME",
         type=str,
@@ -368,15 +363,15 @@ def main(args):
         "-mutation_rate",
         metavar="RATE",
         type=float,
-        default=0.25,
-        help="Change the rate at which mutations occur. (Default: 0.25) "
+        default=0.75,
+        help="Change the rate at which mutations occur. (Default: 0.75) "
     )
     parser.add_argument(
         "-epsilon",
         metavar="EPSILON",
         type=float,
-        default=0.005,
-        help="Change the threshold of convergence. (Default: 0.005)"
+        default=0.0,
+        help="Change the threshold of convergence. (Default: 0.0)"
     )
     parser.add_argument(
         "-steps_to_converge",
@@ -388,7 +383,7 @@ def main(args):
     parser.add_argument(
         "-save_stats",
         action="store_true",
-        help="Create 2 files in run_stats: a visual plot and a file that reflects that data in the plot."
+        help="Create a visual plot for the generation statistic in /run_stats."
     )
     parser.add_argument(
         "-analyze",
@@ -414,18 +409,19 @@ def main(args):
     if args.analyze:
         analysis = AnalyzeKeyboards(args.dataset, keyboard['layout'], args.config)
         analysis.update_keyboards([keyboard['layout']])
-        analysis.preform_analysis(inf)
-        results = analysis.get_results()
-        keyboard['total_distance'] = results['total_distances'][0]
-        keyboard['total_chars'] = results['total_chars']
-        keyboard['total_uncounted'] = results['total_uncounted']
-        keyboard['efficiency'] = results['efficiencies'][0]
-        keyboard['dataset_names'] = results['dataset_names']
-        keyboard['last_analysis'] = results['last_analysis']
+        analysis.preform_analysis([inf])
+        results = analysis.get_keyboards()
+        keyboard['total_distance'] = results[0].accumulated_cost
+        keyboard['total_chars'] = analysis.chars
+        keyboard['total_uncounted'] = analysis.uncounted
+        keyboard['efficiency'] = results[0].accumulated_cost / (analysis.chars - analysis.uncounted)
+        keyboard['dataset_names'] = analysis.filenames
+        keyboard['last_analysis'] = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         with open(args.keyboard, "w") as json_file:
             dump(keyboard, json_file)
         exit()
-    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.config, args.simplify, args.gen_size,
+    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.char_checkpoint, args.config, args.simplify,
+                                 args.gen_size,
                                  args.epsilon, args.steps_to_converge, args.mutation_rate, args.save_stats)
     raw, simplified = generator.generate()
     if args.save_stats:
