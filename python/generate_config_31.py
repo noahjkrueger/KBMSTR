@@ -34,6 +34,7 @@ def create_config(config_file):
             key_y, finger_y = items[y]
             if finger_x == finger_y:
                 dic['cost_matrix'][(key_x, key_y)] = g.calc_distance(key_x, key_y)
+    dic['cost_matrix'] = str(dic['cost_matrix'])
     with open(config_file, 'w') as cfg:
         cfg.write(str(dic))
 

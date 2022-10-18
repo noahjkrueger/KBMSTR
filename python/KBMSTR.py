@@ -123,6 +123,7 @@ class AnalyzeKeyboards:
             if count % chk == 0:
                 if tool.accumulated_cost > 0.95 * (distance_limits[count // chk]):
                     tool.accumulated_cost = inf
+                    tool.checkpoints = None
                     break
                 else:
                     tool.checkpoints.append(tool.accumulated_cost)
@@ -157,7 +158,7 @@ class AnalyzeKeyboards:
                 self.__kb_tools[res[0]].accumulated_cost = inf
             else:
                 self.__kb_tools[res[0]].accumulated_cost = res[1]
-                self.__kb_tools[res[0]].checkpoints = res[2] # TODO: do this after
+                self.__kb_tools[res[0]].checkpoints = res[2]
         cls()
 
     def get_keyboards(self):
@@ -169,6 +170,7 @@ class GeneticKeyboards:
                  epsilon, steps_to_converge, mutation_rate, save_stats):
         self.__original = original
         self.__produce_simple = produce_simple
+        self.__sim_res = None
         self.__mutate_rate = mutation_rate
         self.__save_stats = save_stats
         self.__stats_best = []
@@ -189,7 +191,8 @@ class GeneticKeyboards:
         self.__judge = AnalyzeKeyboards(dataset, original, config)
         self.__checkpoints = [inf for i in range(0, len(self.__judge.dataset_chars) // char_checkpoint)]
         self.__best_keyboard = None
-        print("Calculating Fitness for Generation 0 (This may take a long time - depending on dataset size)")
+        print("Calculating Fitness for Generation 0 (This may take a long time - depending on dataset size and "
+              "generation size)")
         self._calculate_fitness()
         self.__gen_number = 1
 
@@ -219,14 +222,10 @@ class GeneticKeyboards:
             self.__current_gen = new_gen
             self._calculate_fitness()
             self.__gen_number += 1
-        simple = None
-        if self.__produce_simple:
-            pass
-            # TODO: produce a simplified version of the best one. Balance similarity and effeciency -> max(sim*eff) genetic? maybe swap keys around, sim = dist in keys?
         if self.__save_stats:
             plt.plot([i for i in range(0, self.__gen_number)], self.__stats_best, label='Raw')
             if self.__produce_simple:
-                plt.plot(self.__gen_number - 1, self.__current_gen_top_performance, marker=".",  # TODO: change for simp
+                plt.plot(self.__sim_res['produced_in_gen'], self.__sim_res['efficiency'], marker=".",
                          markersize=12, label='Simple')
             plt.text(0, self.__stats_best[0],
                      f"Best:{self.__current_gen_top_performance:>3f}, "
@@ -244,7 +243,7 @@ class GeneticKeyboards:
                    'efficiency': self.__current_results[0].accumulated_cost / (self.__judge.chars - self.__judge.uncounted),
                    'dataset_names': self.__judge.filenames,
                    'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-               }, simple
+               }, self.__sim_res
 
     def _mutate(self, keyboard):
         length = len(keyboard)
@@ -289,6 +288,21 @@ class GeneticKeyboards:
         self.__current_gen_top_performance = top_preform
         if self.__save_stats:
             self.__stats_best.append(top_preform)
+        if self.__produce_simple:
+            similarity = 0
+            for x, y in zip(list(self.__original), list(self.__best_keyboard)):
+                similarity += 1 if x == y else 0
+            similarity /= len(self.__original) # TODO: make better
+            if not self.__sim_res or (self.__current_gen_top_performance > similarity > self.__sim_res['similarity']):
+                self.__sim_res = {'layout': self.__best_keyboard,
+                                  'total_distance': self.__current_results[0].accumulated_cost,
+                                  'total_chars': self.__judge.chars, 'total_uncounted': self.__judge.uncounted,
+                                  'efficiency': self.__current_results[0].accumulated_cost / (
+                                              self.__judge.chars - self.__judge.uncounted),
+                                  'dataset_names': self.__judge.filenames,
+                                  'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S"),
+                                  'similarity': similarity,
+                                  'produced_in_gen': self.__gen_number - 1}
 
 
 def show_keyboards(keyboard):
@@ -316,7 +330,7 @@ def main(args):
         help="Name of the keyboard layout to improve upon, stored in /keyboards."
     )
     parser.add_argument(
-        "config",
+        "-config",
         type=str,
         help="Name of the config JSON to initialize the cost matrix, finger responsibilities and initial finger "
              "positions. "
@@ -406,11 +420,13 @@ def main(args):
         exit()
     if not args.dataset:
         raise Exception("A dataset is required for this action.")
+    if not args.config:
+        raise Exception("A config is required for this action.")
     if args.analyze:
         analysis = AnalyzeKeyboards(args.dataset, keyboard['layout'], args.config)
         analysis.update_keyboards([keyboard['layout']])
         analysis.preform_analysis([inf])
-        results = analysis.get_keyboards()
+        results = list(analysis.get_keyboards())
         keyboard['total_distance'] = results[0].accumulated_cost
         keyboard['total_chars'] = analysis.chars
         keyboard['total_uncounted'] = analysis.uncounted
@@ -432,11 +448,11 @@ def main(args):
         plt.grid()
         plt.savefig(f"run_stats/{args.name if args.name else raw['last_analysis']}.genstats.png")
     with open(f"keyboards/{args.name if args.name else raw['last_analysis']}.raw.json", "w") as json_file:
-        raw['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
+        raw['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}.raw"
         dump(raw, json_file)
     if simplified:
         with open(f"keyboards/{args.name}.simplified.json", "w") as json_file:
-            simplified['name'] = f"keyboards/{args.name if args.name else raw['last_analysis']}"
+            simplified['name'] = f"keyboards/{args.name if args.name else simplified['last_analysis']}.simplified"
             dump(simplified, json_file)
     cls()
     print(f"Finished running KBMSTR with args:\n\n\tkeyboard={args.keyboard}\n\tdataset={args.dataset}\n\t"
