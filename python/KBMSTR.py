@@ -18,11 +18,10 @@ def cls():
 
 
 class _KeyboardTool:
-    def __init__(self, og_finger_pos):
+    def __init__(self, finger_pos):
         self.layout = None
         self.mapping = {}
-        self.__og_finger_pos = og_finger_pos
-        self.finger_pos = og_finger_pos
+        self.finger_pos = finger_pos
         self.accumulated_cost = 0
         self.checkpoints = []
 
@@ -35,9 +34,6 @@ class _KeyboardTool:
         for char in layout:
             self.mapping[char] = i
             i += 1
-
-    def reset_finger_pos(self):
-        self.finger_pos = self.__og_finger_pos
 
 
 class AnalyzeKeyboards:
@@ -154,11 +150,8 @@ class AnalyzeKeyboards:
         proc.join()
         for i in range(0, len(self.__kb_tools)):
             res = out_queue.get()
-            if res[1] == inf:
-                self.__kb_tools[res[0]].accumulated_cost = inf
-            else:
-                self.__kb_tools[res[0]].accumulated_cost = res[1]
-                self.__kb_tools[res[0]].checkpoints = res[2]
+            self.__kb_tools[res[0]].accumulated_cost = res[1]
+            self.__kb_tools[res[0]].checkpoints = res[2]
         cls()
 
     def get_keyboards(self):
@@ -222,9 +215,6 @@ class GeneticKeyboards:
             self.__gen_number += 1
         if self.__save_stats:
             plt.plot([i for i in range(0, self.__gen_number)], self.__stats_best, label='Raw')
-            if self.__produce_simple:
-                plt.plot(self.__sim_res['produced_in_gen'], self.__sim_res['efficiency'], marker=".",
-                         markersize=12, label='Simple')
             plt.text(0, self.__stats_best[0],
                      f"Best:{self.__current_gen_top_performance:>3f}, "
                      f"ε:{self.__epsilon}, "
@@ -241,7 +231,7 @@ class GeneticKeyboards:
                    'efficiency': self.__current_results[0].accumulated_cost / (self.__judge.chars - self.__judge.uncounted),
                    'dataset_names': self.__judge.filenames,
                    'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-               }, self.__sim_res
+               }
 
     def _mutate(self, keyboard):
         length = len(keyboard)
