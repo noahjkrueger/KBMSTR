@@ -18,11 +18,10 @@ def cls():
 
 
 class _KeyboardTool:
-    def __init__(self, og_finger_pos):
+    def __init__(self, finger_pos):
         self.layout = None
         self.mapping = {}
-        self.__og_finger_pos = og_finger_pos
-        self.finger_pos = og_finger_pos
+        self.finger_pos = finger_pos
         self.accumulated_cost = 0
         self.checkpoints = []
 
@@ -35,9 +34,6 @@ class _KeyboardTool:
         for char in layout:
             self.mapping[char] = i
             i += 1
-
-    def reset_finger_pos(self):
-        self.finger_pos = self.__og_finger_pos
 
 
 class AnalyzeKeyboards:
@@ -154,11 +150,6 @@ class AnalyzeKeyboards:
         proc.join()
         for i in range(0, len(self.__kb_tools)):
             res = out_queue.get()
-            if res[1] == inf:
-                self.__kb_tools[res[0]].accumulated_cost = inf
-            else:
-                self.__kb_tools[res[0]].accumulated_cost = res[1]
-                self.__kb_tools[res[0]].checkpoints = res[2]
         cls()
 
     def get_keyboards(self):
