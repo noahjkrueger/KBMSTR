@@ -166,11 +166,9 @@ class AnalyzeKeyboards:
 
 
 class GeneticKeyboards:
-    def __init__(self, original, dataset, char_checkpoint, config, produce_simple, gen_size,
+    def __init__(self, original, dataset, char_checkpoint, config, gen_size,
                  epsilon, steps_to_converge, mutation_rate, save_stats):
         self.__original = original
-        self.__produce_simple = produce_simple
-        self.__sim_res = None
         self.__mutate_rate = mutation_rate
         self.__save_stats = save_stats
         self.__stats_best = []
@@ -288,21 +286,6 @@ class GeneticKeyboards:
         self.__current_gen_top_performance = top_preform
         if self.__save_stats:
             self.__stats_best.append(top_preform)
-        if self.__produce_simple:
-            similarity = 0
-            for x, y in zip(list(self.__original), list(self.__best_keyboard)):
-                similarity += 1 if x == y else 0
-            similarity /= len(self.__original) # TODO: make better
-            if not self.__sim_res or (self.__current_gen_top_performance > similarity > self.__sim_res['similarity']):
-                self.__sim_res = {'layout': self.__best_keyboard,
-                                  'total_distance': self.__current_results[0].accumulated_cost,
-                                  'total_chars': self.__judge.chars, 'total_uncounted': self.__judge.uncounted,
-                                  'efficiency': self.__current_results[0].accumulated_cost / (
-                                              self.__judge.chars - self.__judge.uncounted),
-                                  'dataset_names': self.__judge.filenames,
-                                  'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S"),
-                                  'similarity': similarity,
-                                  'produced_in_gen': self.__gen_number - 1}
 
 
 def show_keyboards(keyboard):
@@ -359,12 +342,6 @@ def main(args):
         default="",
         help="Name the keyboard being generated. (.raw/.simplified) are added with respect to result_type. Default "
              "naming scheme: yyyy/mm/dd:hh:mm:ss.(raw/simplified)"
-    )
-    parser.add_argument(
-        "-simplify",
-        action='store_true',
-        help="Include a simplified version of the generated keyboard- more closely resembles the inputted keyboard. ("
-             "less efficiency metric, lower learning curver) "
     )
     parser.add_argument(
         "-gen_size",
@@ -436,8 +413,7 @@ def main(args):
         with open(args.keyboard, "w") as json_file:
             dump(keyboard, json_file)
         exit()
-    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.char_checkpoint, args.config, args.simplify,
-                                 args.gen_size,
+    generator = GeneticKeyboards(keyboard['layout'], args.dataset, args.char_checkpoint, args.config, args.gen_size,
                                  args.epsilon, args.steps_to_converge, args.mutation_rate, args.save_stats)
     raw, simplified = generator.generate()
     if args.save_stats:
