@@ -150,8 +150,6 @@ class AnalyzeKeyboards:
         proc.join()
         for i in range(0, len(self.__kb_tools)):
             res = out_queue.get()
-            self.__kb_tools[res[0]].accumulated_cost = res[1]
-            self.__kb_tools[res[0]].checkpoints = res[2]
         cls()
 
     def get_keyboards(self):
@@ -231,7 +229,7 @@ class GeneticKeyboards:
                    'efficiency': self.__current_results[0].accumulated_cost / (self.__judge.chars - self.__judge.uncounted),
                    'dataset_names': self.__judge.filenames,
                    'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-               }
+               }, self.__sim_res
 
     def _mutate(self, keyboard):
         length = len(keyboard)
