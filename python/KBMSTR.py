@@ -107,7 +107,6 @@ class AnalyzeKeyboards:
             if transition[0] == transition[1]:
                 count += 1
                 continue
-            tool.finger_pos[responsible_finger] = destination
             try:
                 tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
@@ -126,9 +125,11 @@ class AnalyzeKeyboards:
     def _listener(self, q):
         pbar = tqdm(total=len(self.__kb_tools))
         last_size = 0
-        while (size := q.qsize()) < len(self.__kb_tools):
-            if size != 0:
-                pbar.update(size - last_size)
+        total = 0
+        while total < len(self.__kb_tools):
+            size = q.qsize()
+            pbar.update(max(0, size - last_size))
+            total += max(0, size - last_size)
             last_size = size
 
     def preform_analysis(self, distance_limits):
@@ -137,18 +138,27 @@ class AnalyzeKeyboards:
         out_queue = mp.Queue()
         proc = mp.Process(target=self._listener, args=(out_queue,))
         proc.start()
-        workers = []
-        for kb in self.__kb_tools.keys():
-            workers.append(
-                mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limits)))
-        for worker in workers:
-            worker.start()
-        for worker in workers:
-            worker.join()
-        for i in range(0, len(self.__kb_tools)):
-            res = out_queue.get()
-            self.__kb_tools[res[0]].accumulated_cost = res[1]
-            self.__kb_tools[res[0]].checkpoints = res[2]
+        x = 0
+        max = os.cpu_count() - 2
+        tools = list(self.__kb_tools.keys())
+        while x < len(tools):
+            workers = []
+            if x + max >= len(tools):
+                segment = tools[x:]
+            else:
+                segment = tools[x:x+max]
+            for kb in segment:
+                workers.append(
+                    mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limits)))
+            for worker in workers:
+                worker.start()
+            for worker in workers:
+                worker.join()
+            while not out_queue.empty():
+                res = out_queue.get()
+                self.__kb_tools[res[0]].accumulated_cost = res[1]
+                self.__kb_tools[res[0]].checkpoints = res[2]
+            x += max
         proc.join()
         cls()
 
