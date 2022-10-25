@@ -8,11 +8,13 @@ class KBGraph:
     @staticmethod
     def __map_key_to_pt(key):
         if key < 10:
-            return 0.5 + key, 2
-        elif 10 <= key < 21:
-            return 0.75 + (key - 10), 1
-        elif 21 <= key < 32:
-            return 1.25 + (key - 21), 0
+            return key, 3
+        elif key < 20:
+            return 0.25 + (key - 10), 2
+        elif key < 31:
+            return 0.75 + (key - 21), 1
+        elif key < 42:
+            return 1.25 + (key - 32), 0
         raise Exception('bad')
 
     def calc_distance(self, key_a, key_b):
@@ -25,15 +27,12 @@ def create_config(config_file):
     with open(config_file, 'r') as cfg:
         dic = eval(cfg.read())
         finger_duty = eval(dic['finger_duty'])
+        finger_pos = eval(dic['finger_pos'])
     dic['cost_matrix'] = {}
     g = KBGraph()
-    items = list(finger_duty.items())
-    for x in range(0, len(items)):
-        key_x, finger_x = items[x]
-        for y in range(x + 1, len(items)):
-            key_y, finger_y = items[y]
-            if finger_x == finger_y:
-                dic['cost_matrix'][(key_x, key_y)] = g.calc_distance(key_x, key_y)
+    for key, finger in finger_duty.items():
+        print(finger, key, (finger_pos[finger], key), g.calc_distance(finger_pos[finger], key))
+        dic['cost_matrix'][(finger_pos[finger], key)] = g.calc_distance(finger_pos[finger], key)
     dic['cost_matrix'] = str(dic['cost_matrix'])
     with open(config_file, 'w') as cfg:
         cfg.write(str(dic))

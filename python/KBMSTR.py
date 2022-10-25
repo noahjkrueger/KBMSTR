@@ -104,9 +104,6 @@ class AnalyzeKeyboards:
                 continue
             responsible_finger = self.__finger_duty[destination]
             transition = (tool.finger_pos[responsible_finger], destination)
-            if transition[0] == transition[1]:
-                count += 1
-                continue
             try:
                 tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
