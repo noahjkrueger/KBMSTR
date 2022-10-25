@@ -21,16 +21,19 @@ function read_data(kb_name, kb_layout, kb_last_analysis, kb_efficiency, kb_datas
     let keyrow_2 = document.createElement("div");
     let keyrow_3 = document.createElement("div");
     let keyrow_4 = document.createElement("div");
+    let keyrow_5 = document.createElement("div");
     
     keyrow_1.classList.add("keyrow_1");
     keyrow_2.classList.add("keyrow_2");
     keyrow_3.classList.add("keyrow_3");
     keyrow_4.classList.add("keyrow_4");
+    keyrow_5.classList.add("keyrow_5");
     
     keyboard_div.appendChild(keyrow_1);
     keyboard_div.appendChild(keyrow_2);
     keyboard_div.appendChild(keyrow_3);
     keyboard_div.appendChild(keyrow_4);
+    keyboard_div.appendChild(keyrow_5);
     
     function create_keys(x, y, row) {
         for (let cc of kb_layout.substring(x, y)) {
@@ -43,10 +46,11 @@ function read_data(kb_name, kb_layout, kb_last_analysis, kb_efficiency, kb_datas
     }
     create_keys(0, 10, keyrow_1);
     create_keys(10, 20, keyrow_2);
-    create_keys(20, kb_layout.length, keyrow_3);
+    create_keys(20, 31, keyrow_3);
+    create_keys(31, kb_layout.length, keyrow_4)
     let space = document.createElement("kbd");
     space.classList.add("key");
     space.classList.add("space");
     space.innerText = "space";
-    keyrow_4.appendChild(space);
+    keyrow_5.appendChild(space);
 }

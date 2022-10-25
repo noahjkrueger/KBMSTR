@@ -10,11 +10,11 @@ class KBGraph:
         if key < 10:
             return key, 3
         elif key < 20:
-            return 0.25 + (key - 10), 2
+            return 0.75 + (key - 10), 2
         elif key < 31:
-            return 0.75 + (key - 21), 1
+            return 1.25 + (key - 21), 1
         elif key < 42:
-            return 1.25 + (key - 32), 0
+            return 2 + (key - 32), 0
         raise Exception('bad')
 
     def calc_distance(self, key_a, key_b):
@@ -31,7 +31,6 @@ def create_config(config_file):
     dic['cost_matrix'] = {}
     g = KBGraph()
     for key, finger in finger_duty.items():
-        print(finger, key, (finger_pos[finger], key), g.calc_distance(finger_pos[finger], key))
         dic['cost_matrix'][(finger_pos[finger], key)] = g.calc_distance(finger_pos[finger], key)
     dic['cost_matrix'] = str(dic['cost_matrix'])
     with open(config_file, 'w') as cfg:
