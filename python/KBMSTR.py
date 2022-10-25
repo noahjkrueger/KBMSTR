@@ -18,14 +18,13 @@ def cls():
 
 
 class _KeyboardTool:
-    def __init__(self, finger_pos, layout):
+    def __init__(self, layout):
         self.layout = layout
         self.mapping = {}
         i = 0
         for char in layout:
             self.mapping[char] = i
             i += 1
-        self.finger_pos = finger_pos
         self.accumulated_cost = 0
         self.checkpoints = []
 
@@ -38,7 +37,7 @@ class AnalyzeKeyboards:
         self.__kb_tools = {}
         self.__finger_duty = None
         self.__cost_matrix = None
-        self.__og_finger_pos = None
+        self.__finger_pos = None
 
         self.__dataset = dataset
         self.chars = 0
@@ -56,14 +55,14 @@ class AnalyzeKeyboards:
     def update_keyboards(self, keyboards):
         self.__kb_tools = {}
         for keyboard in keyboards:
-            self.__kb_tools[keyboard] = _KeyboardTool(self.__og_finger_pos, keyboard)
+            self.__kb_tools[keyboard] = _KeyboardTool(keyboard)
 
     def _init_config(self, config):
         with open(config, 'r') as cfg:
             dic = eval(cfg.read())
             self.__finger_duty = eval(dic['finger_duty'])
             self.__cost_matrix = eval(dic['cost_matrix'])
-            self.__og_finger_pos = eval(dic['finger_pos'])
+            self.__finger_pos = eval(dic['finger_pos'])
 
     def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
@@ -103,7 +102,7 @@ class AnalyzeKeyboards:
                 count += 1.
                 continue
             responsible_finger = self.__finger_duty[destination]
-            transition = (tool.finger_pos[responsible_finger], destination)
+            transition = (self.__finger_pos[responsible_finger], destination)
             try:
                 tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
