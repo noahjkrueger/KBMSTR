@@ -1,15 +1,14 @@
-# <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32"> KBMSTR - Personalized Keyboards
+# <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="64"> KBMSTR - Personalized Keyboards
 ### [Visit the Official Website!](href)
 <hr>
 
-### Table of Contents
+### <img src="docs/images/book.png" alt="Book Icon" height="32"> Table of Contents
 **[Introduction](#introduction)**<br>
 **[Assumptions](#assumptions)**<br>
 **[Installation](#installation)**<br>
 **[Creating a Keyboard](#creating-a-keyboard)**<br>
 **[Pre-made Keyboards](#pre-made-keyboards)**<br>
 **[Practice New Keyboards](#practice-new-keyboards)**<br>
-
 
 ## <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32"> Introduction
 
