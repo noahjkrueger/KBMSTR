@@ -18,7 +18,7 @@ def cls():
 
 
 class _KeyboardTool:
-    def __init__(self, layout):
+    def __init__(self, layout, finger_pos):
         self.layout = layout
         self.mapping = {}
         i = 0
@@ -27,6 +27,7 @@ class _KeyboardTool:
             i += 1
         self.accumulated_cost = 0
         self.checkpoints = []
+        self.finger_pos = finger_pos
 
     def get_info(self):
         return self.layout, self.accumulated_cost, self.checkpoints
@@ -38,6 +39,7 @@ class AnalyzeKeyboards:
         self.__finger_duty = None
         self.__cost_matrix = None
         self.__finger_pos = None
+        self.__alt_keys = None
 
         self.__dataset = dataset
         self.chars = 0
@@ -55,14 +57,15 @@ class AnalyzeKeyboards:
     def update_keyboards(self, keyboards):
         self.__kb_tools = {}
         for keyboard in keyboards:
-            self.__kb_tools[keyboard] = _KeyboardTool(keyboard)
+            self.__kb_tools[keyboard] = _KeyboardTool(keyboard, self.__finger_pos)
 
     def _init_config(self, config):
         with open(config, 'r') as cfg:
             dic = eval(cfg.read())
             self.__finger_duty = eval(dic['finger_duty'])
             self.__cost_matrix = eval(dic['cost_matrix'])
-            self.__finger_pos = eval(dic['finger_pos'])
+            self.__finger_pos = dic['finger_pos']
+            self.__alt_keys = dic['alt_keys']
 
     def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
@@ -83,7 +86,7 @@ class AnalyzeKeyboards:
                                     while line := dataset.readline():
                                         for char in line.decode()[:-1].lower():
                                             self.chars += 1
-                                            if char not in valid_chars:
+                                            if char not in valid_chars and char not in self.__alt_keys.keys():
                                                 self.uncounted += 1
                                             elif char is not None:
                                                 self.dataset_chars.append(char)
@@ -99,14 +102,18 @@ class AnalyzeKeyboards:
             try:
                 destination = tool.mapping[char]
             except KeyError:
-                count += 1.
-                continue
+                try:
+                    destination = tool.mapping[self.__alt_keys[char]]
+                except KeyError:
+                    count += 1
+                    continue
             responsible_finger = self.__finger_duty[destination]
             transition = (self.__finger_pos[responsible_finger], destination)
             try:
                 tool.accumulated_cost += self.__cost_matrix[transition]
             except KeyError:
                 tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
+            tool.finger_pos[responsible_finger] = destination
             if chk < len(distance_limits) and count >= distance_limits[chk][0]:
                 if tool.accumulated_cost > 1.1 * distance_limits[chk][1]:
                     tool.accumulated_cost = inf
@@ -309,13 +316,23 @@ class GeneticKeyboards:
             self.__stats_best.append(top_preform)
 
 
-def show_keyboards(keyboard):
+def show_keyboards(keyboard, config):
     eel.init('display')
 
-    def load_json_to_html(name, layout, last_analysis, efficiency, datasets):
-        eel.read_data(name, layout, last_analysis, efficiency, datasets)
-
-    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], keyboard['last_analysis'],
+    def load_json_to_html(name, layout, layout_alt_keys, last_analysis, efficiency, datasets):
+        eel.read_data(name, layout, layout_alt_keys, last_analysis, efficiency, datasets)
+    with open(config, 'r') as cfg:
+        dic = eval(cfg.read())
+        alt_keys = dic['alt_keys']
+    alt_k = []
+    for c in keyboard['layout']:
+        if c not in alt_keys.values():
+            alt_k.append(str(c).upper())
+        else:
+            for k, v in alt_keys.items():
+                if v == c:
+                    alt_k.append(k)
+    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], ''.join(alt_k), keyboard['last_analysis'],
                       keyboard['efficiency'],
                       keyboard['dataset_names'])
     eel.start('index.html', size=(1000, 700))
@@ -413,13 +430,13 @@ def main(args):
     args = parser.parse_args(args)
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
+    if not args.config:
+        raise Exception("A config is required for this action.")
     if args.display:
-        show_keyboards(keyboard)
+        show_keyboards(keyboard, args.config)
         exit()
     if not args.dataset:
         raise Exception("A dataset is required for this action.")
-    if not args.config:
-        raise Exception("A config is required for this action.")
     if args.analyze:
         analysis = AnalyzeKeyboards(args.dataset, keyboard['layout'], args.config)
         analysis.update_keyboards([keyboard['layout']])
