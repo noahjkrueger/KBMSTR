@@ -1,7 +1,7 @@
 
 eel.expose(read_data);
 const og_layout = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./";
-// read_data("test", "`1234567890-=pwertyuioq[]\\asdfghjkl;'zxcvbnm,./", "~!@#$%^&*()_+PWERTYUIOQ{}|ASDFGHJKL:\"ZXCVBNM<>?", "none", 0, "none");
+// read_data("test", "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./", "~!@#$%^&*()_+QWERTYUIOp{}|ASDFGHJKL:\"ZXCVBNM<>?", "none", 0, "none");
 function read_data(kb_name, kb_layout, alt_kb_layout, kb_last_analysis, kb_efficiency, kb_datasets) {
     document.getElementById("keyboard-name").innerText = "The " + kb_name + " keyboard";
     document.getElementById("last-analysis").innerText = kb_last_analysis;
@@ -121,6 +121,9 @@ document.body.addEventListener('keyup', function (e) {
     if (key) {
         for (let k of key){
             k.removeAttribute('data-pressed');
+            if (k.getAttribute("key_name") === "CapsLock") {
+                k.toggleAttribute("caps-on");
+            }
         }
     }
 });

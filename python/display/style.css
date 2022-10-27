@@ -22,9 +22,15 @@
 }
 
 .keyboard {
+    
     text-align: center;
     font-size: 1.25vw;
     font-family: sans-serif;
+    background-color: #f8f8f8;
+    border-radius: 1em;
+    padding: 1%;
+    margin-left: 3%;
+    margin-right: 3%;
 }
 
 .keyboard-wrapper {
@@ -72,6 +78,11 @@
     cursor: pointer;
     --webkit-user-select: none;
     box-shadow: 0 0.2em 0 0.05em #a8a8a8;
+}
+
+.keyrow > div[caps-on],
+.keyrow > div:active {
+    background: #ff9e9e;
 }
 
 .keyrow > div[data-pressed],
