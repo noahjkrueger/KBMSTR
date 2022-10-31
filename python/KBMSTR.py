@@ -90,7 +90,6 @@ class AnalyzeKeyboards:
                                                 self.uncounted += 1
                                             elif char is not None:
                                                 self.dataset_chars.append(char)
-                                self.dataset_chars.append(None)
                             pbar2.update(1)
                 pbar1.update(1)
         cls()
@@ -102,11 +101,7 @@ class AnalyzeKeyboards:
             try:
                 destination = tool.mapping[char]
             except KeyError:
-                try:
-                    destination = tool.mapping[self.__alt_keys[char]]
-                except KeyError:
-                    count += 1
-                    continue
+                destination = tool.mapping[self.__alt_keys[char]]
             responsible_finger = self.__finger_duty[destination]
             transition = (self.__finger_pos[responsible_finger], destination)
             try:
@@ -370,7 +365,7 @@ def main(args):
         metavar="SIZE",
         type=int,
         default=100000,
-        help="Create character checkpoints for large datasets. For each keyboard, disregaurd if the total distance is "
+        help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
              "greater than the 0.95 * last best total distance at every [char_checkpoint] number of characters."
     )
     parser.add_argument(
@@ -385,8 +380,8 @@ def main(args):
         "-gen_size",
         metavar="SIZE",
         type=int,
-        default=25,
-        help="Chose the number of members for each generation. (Default: 100)"
+        default=250,
+        help="Chose the number of members for each generation. (Default: 250)"
     )
     parser.add_argument(
         "-mutation_rate",

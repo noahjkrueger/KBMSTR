@@ -76,13 +76,18 @@
     border-bottom : #a0a0a0;
     box-sizing: border-box;
     cursor: pointer;
-    --webkit-user-select: none;
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
     box-shadow: 0 0.2em 0 0.05em #a8a8a8;
 }
 
 .keyrow > div[caps-on],
 .keyrow > div:active {
-    background: #ff9e9e;
+    box-shadow: 0 0.2em 0 0.05em #a09eff;
+    border: 2px solid #a09eff;
 }
 
 .keyrow > div[data-pressed],
@@ -106,10 +111,7 @@
 }
 
 .kw4 {
-    margin-left: 18em;
-    margin-right: 18em;
-    width: 18em;
-    color: #00000000;
+    width: 21.5em;
 } 
 
 .table {

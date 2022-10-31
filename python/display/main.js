@@ -129,7 +129,7 @@ document.body.addEventListener('keyup', function (e) {
 });
 
 function size () {
-    var size = keyboard.parentNode.clientWidth / 60;
+    var size = keyboard.parentNode.clientWidth / 61;
     keyboard.style.fontSize = size + 'px';
 }
 

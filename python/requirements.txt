@@ -1,3 +1,4 @@
 Eel==0.14.0
 matplotlib==3.6.1
 tqdm==4.64.1
+pynput==1.7.6
