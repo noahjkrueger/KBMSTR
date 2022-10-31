@@ -40,13 +40,14 @@ class AnalyzeKeyboards:
         self.__cost_matrix = None
         self.__finger_pos = None
         self.__alt_keys = None
+        self.__return_to_home = None
 
         self.__dataset = dataset
         self.chars = 0
         self.uncounted = 0
         self.__zips = list()
         self.filenames = list()
-        self.dataset_chars = list()
+        self.dataset_chars = None
         self._init_config(config)
         self._init_dataset(valid_chars)
 
@@ -66,6 +67,11 @@ class AnalyzeKeyboards:
             self.__cost_matrix = eval(dic['cost_matrix'])
             self.__finger_pos = dic['finger_pos']
             self.__alt_keys = dic['alt_keys']
+            self.__return_to_home = dic['return_to_home']
+        if self.__return_to_home:
+            self.dataset_chars = dict()
+        else:
+            self.dataset_chars = list()
 
     def _init_dataset(self, valid_chars):
         for root, direct, files in os.walk(self.__dataset):
@@ -89,12 +95,32 @@ class AnalyzeKeyboards:
                                             if char not in valid_chars and char not in self.__alt_keys.keys():
                                                 self.uncounted += 1
                                             elif char is not None:
-                                                self.dataset_chars.append(char)
+                                                if not self.__return_to_home:
+                                                    self.dataset_chars.append(char)
+                                                else:
+                                                    try:
+                                                        self.dataset_chars[char] += 1
+                                                    except KeyError:
+                                                        self.dataset_chars[char] = 1
                             pbar2.update(1)
                 pbar1.update(1)
         cls()
 
-    def _analyze_thread(self, tool, out_queue, distance_limits):
+    def _analyze_thread_return(self, tool, out_queue):
+        for char, char_count in self.dataset_chars.items():
+            try:
+                destination = tool.mapping[char]
+            except KeyError:
+                destination = tool.mapping[self.__alt_keys[char]]
+            responsible_finger = self.__finger_duty[destination]
+            transition = (self.__finger_pos[responsible_finger], destination)
+            try:
+                tool.accumulated_cost += self.__cost_matrix[transition] * char_count
+            except KeyError:
+                tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])] * char_count
+        out_queue.put((tool.layout, tool.accumulated_cost, list()))
+
+    def _analyze_thread_remain(self, tool, out_queue, distance_limits):
         chk = 0
         count = 0
         for char in self.dataset_chars:
@@ -112,7 +138,7 @@ class AnalyzeKeyboards:
             if chk < len(distance_limits) and count >= distance_limits[chk][0]:
                 if tool.accumulated_cost > 1.1 * distance_limits[chk][1]:
                     tool.accumulated_cost = inf
-                    tool.checkpoints = None
+                    tool.checkpoints = list()
                     break
                 else:
                     tool.checkpoints.append((count, tool.accumulated_cost))
@@ -146,8 +172,11 @@ class AnalyzeKeyboards:
             else:
                 segment = tools[x:x+max]
             for kb in segment:
-                workers.append(
-                    mp.Process(target=self._analyze_thread, args=(self.__kb_tools[kb], out_queue, distance_limits)))
+                if not self.__return_to_home:
+                    workers.append(mp.Process(target=self._analyze_thread_remain, args=(self.__kb_tools[kb], out_queue, distance_limits)))
+                else:
+                    workers.append(mp.Process(target=self._analyze_thread_return,
+                                              args=(self.__kb_tools[kb], out_queue)))
             for worker in workers:
                 worker.start()
             for worker in workers:
@@ -203,7 +232,7 @@ class GeneticKeyboards:
               f"Steps:{self.__num_steps:>28}/{self.__steps_to_converge}\n"
               f"Generation Size: {self.__gen_size:>19}\n"
               f"Mutation Rate:{self.__mutate_rate:>22}\n\n"
-              f"Calculating fitness... Using {len(self.__checkpoints)} checkpoints to speed things up")
+              f"Calculating fitness... {f'Using {len(self.__checkpoints)} checkpoints to speed things up' if len(self.__checkpoints) > 0 else ''}")
 
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
@@ -214,7 +243,7 @@ class GeneticKeyboards:
                 if self.__current_results[i].accumulated_cost == inf:
                     weights.append(0)
                 else:
-                    weights.append((self.__gen_size - i) ** 2)
+                    weights.append((self.__gen_size - i))
             while len(new_gen) < self.__gen_size:
                 parent_a, parent_b = choices(self.__current_gen, weights, k=2)
                 new_gen.append(self._crossover(parent_a, parent_b))
@@ -366,7 +395,8 @@ def main(args):
         type=int,
         default=100000,
         help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
-             "greater than the 0.95 * last best total distance at every [char_checkpoint] number of characters."
+             "greater than the 1.1 * last best total distance at every [char_checkpoint] number of characters. Ignored"
+             "if the loaded config has return_to_home flag set True."
     )
     parser.add_argument(
         "-name",

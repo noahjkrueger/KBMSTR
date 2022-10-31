@@ -11,11 +11,11 @@ class KBGraph:
         if key < 13:
             return key, 3
         elif key < 26:
-            return 2 + (key - 13), 2
+            return 1.5 + (key - 13), 2
         elif key < 37:
-            return 2.25 + (key - 26), 1
+            return 1.75 + (key - 26), 1
         elif key < 47:
-            return 2.75 + (key - 37), 0
+            return 2 + (key - 37), 0
         raise Exception('bad')
 
     def calc_distance(self, key_a, key_b):
