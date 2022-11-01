@@ -9,8 +9,6 @@
 **[Pre-made Keyboards](#pre-made-keyboards)**<br>
 **[Practice New Keyboards](#practice-new-keyboards)**<br>
 
-<hr>
-
 ## <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32"> Introduction
 KBMSTER provides an array of tools for a user to find the best layout of a keyboard for their own personalized use.
 By utilizing these tools, a user is able to collect data on actual typing habits and in turn use this data to generate
@@ -24,12 +22,8 @@ actual typing habits, KBMSTR will then utilize these two items to employ a genet
 for you. This, paired with [KBMSTR's practice tool](link-to-website) allow for users to dramaically speed up their typinf speeds
 and reduce hand fatigue while using the computer.
 
-<hr>
-
-## <img src="docs/images/exclaim.png" alt="Exlaimation Mark Icon" height="32"> Assumptions
+### <img src="docs/images/exclaim.png" alt="Exlaimation Mark Icon" height="32" id="assumptions"> Assumptions
 KBMSTR makes a couple assumptions while generating keyboard layouts.
-
-<hr>
 
 ## <img src="docs/images/download.png" alt="Download Icon" height="32"> Installation
 To get started, clone this Repo:
@@ -45,8 +39,6 @@ And install the required libraries:
     pip install -r requirements.txt
 
 And that's it! You are ready to start using the tools!
-
-<hr>
 
 ## <img src="docs/images/create.png" alt="Hammer Icon" height="32"> Creating a Keyboard
 ### Getting a Dataset
@@ -79,8 +71,6 @@ This is very important.
 #### generate_config.py
 use
 
-<hr>
-
 ## <img src="docs/images/gear.png" alt="Gear Icon" height="32"> Pre-made Keyboards
 ### Dataset Sources
 - https://www.gutenberg.org/
@@ -90,8 +80,6 @@ use
 - **SHAKESPEAR**
 - **ENGLISH**
 - **JAVA**
-
-<hr>
 
 ## <img src="docs/images/learn.png" alt="Student Icon" height="32"> Practice New Keyboards
 go to website here is more explanation
