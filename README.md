@@ -9,7 +9,7 @@
 **[Pre-made Keyboards](#pre-made-keyboards)**<br>
 **[Practice New Keyboards](#practice-new-keyboards)**<br>
 
-## <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32"> Introduction
+## <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
 KBMSTER provides an array of tools for a user to find the best layout of a keyboard for their own personalized use.
 By utilizing these tools, a user is able to collect data on actual typing habits and in turn use this data to generate
 a keyboard layout to their exact needs. The goal of a generating a layout is to minimize the finger travel distance when
@@ -22,7 +22,7 @@ actual typing habits, KBMSTR will then utilize these two items to employ a genet
 for you. This, paired with [KBMSTR's practice tool](link-to-website) allow for users to dramaically speed up their typinf speeds
 and reduce hand fatigue while using the computer.
 
-### <img src="docs/images/exclaim.png" alt="Exlaimation Mark Icon" height="32" id="assumptions"> Assumptions
+## <img src="docs/images/exclaim.png" alt="Exlaimation Mark Icon" height="32" id="assumptions"> Assumptions
 KBMSTR makes a couple assumptions while generating keyboard layouts.
 
 ## <img src="docs/images/download.png" alt="Download Icon" height="32"> Installation
@@ -40,7 +40,7 @@ And install the required libraries:
 
 And that's it! You are ready to start using the tools!
 
-## <img src="docs/images/create.png" alt="Hammer Icon" height="32"> Creating a Keyboard
+## <img src="docs/images/create.png" alt="Hammer Icon" height="32" id="creating-a-keyboard"> Creating a Keyboard
 ### Getting a Dataset
 Generating a keyboard needs data. We recommend using collect_data.py, but you can provide the data in other ways. We reccomend
 a dataset with at least 1 million (1,000,000) character, but the more the merrier[**](#using-kbmstrpy).
@@ -71,7 +71,7 @@ This is very important.
 #### generate_config.py
 use
 
-## <img src="docs/images/gear.png" alt="Gear Icon" height="32"> Pre-made Keyboards
+## <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
 ### Dataset Sources
 - https://www.gutenberg.org/
 ### Included Keyboards
@@ -81,5 +81,5 @@ use
 - **ENGLISH**
 - **JAVA**
 
-## <img src="docs/images/learn.png" alt="Student Icon" height="32"> Practice New Keyboards
+## <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
 go to website here is more explanation
