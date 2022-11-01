@@ -375,7 +375,7 @@ def main(args):
         help="Name of the keyboard layout to improve upon, stored in /keyboards."
     )
     parser.add_argument(
-        "-config",
+        "config",
         type=str,
         help="Name of the config JSON to initialize the cost matrix, finger responsibilities and initial finger "
              "positions. "
@@ -455,8 +455,6 @@ def main(args):
     args = parser.parse_args(args)
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
-    if not args.config:
-        raise Exception("A config is required for this action.")
     if args.display:
         show_keyboards(keyboard, args.config)
         exit()
