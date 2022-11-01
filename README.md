@@ -9,7 +9,7 @@
 **[Pre-made Keyboards](#pre-made-keyboards)**<br>
 **[Practice New Keyboards](#practice-new-keyboards)**<br>
 
-## <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
+# <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
 KBMSTER provides an array of tools for a user to find the best layout of a keyboard for their own personalized use.
 By utilizing these tools, a user is able to collect data on actual typing habits and in turn use this data to generate
 a keyboard layout to their exact needs. The goal of a generating a layout is to minimize the finger travel distance when
@@ -22,10 +22,10 @@ actual typing habits, KBMSTR will then utilize these two items to employ a genet
 for you. This, paired with [KBMSTR's practice tool](link-to-website) allow for users to dramaically speed up their typinf speeds
 and reduce hand fatigue while using the computer.
 
-## <img src="docs/images/exclaim.png" alt="Exlaimation Mark Icon" height="32" id="assumptions"> Assumptions
+# <img src="docs/images/exclaim.png" alt="Exlaimation Mark Icon" height="32" id="assumptions"> Assumptions
 KBMSTR makes a couple assumptions while generating keyboard layouts.
 
-## <img src="docs/images/download.png" alt="Download Icon" height="32"> Installation
+# <img src="docs/images/download.png" alt="Download Icon" height="32" id="installation"> Installation
 To get started, clone this Repo:
 
     git clone https://github.com/noahjkrueger/KBMSTR.git
@@ -40,11 +40,11 @@ And install the required libraries:
 
 And that's it! You are ready to start using the tools!
 
-## <img src="docs/images/create.png" alt="Hammer Icon" height="32" id="creating-a-keyboard"> Creating a Keyboard
-### Getting a Dataset
+# <img src="docs/images/create.png" alt="Hammer Icon" height="32" id="creating-a-keyboard"> Creating a Keyboard
+## Getting a Dataset
 Generating a keyboard needs data. We recommend using collect_data.py, but you can provide the data in other ways. We reccomend
 a dataset with at least 1 million (1,000,000) character, but the more the merrier[**](#using-kbmstrpy).
-#### Using collect_data.py
+### Using collect_data.py
 This is probably the best way to provide the KBMSTR tool the data it needs. It is simple, non-invasive, and the most accurate
 to your use of the keyboard. To use this tool, navigate to the /python/ directory and type the command:
 
@@ -56,30 +56,64 @@ This data collected is intended for use in the KBMSTR genetic algorithm, and we 
 even ourselves; this data does **not** leave your computer. We highly recommend the deletion of this data once a personalized
 keyboard layout is generated.
 
-#### Not using collect_data.py
+Once you have collected enough data, press <kbd>CRTL</kbd> + <kbd>C</kbd> to signal the program to stop. If you exit out of the
+program before doing this, there is no guarantee that all data will be saved and packed nicely into a compressed file - ready for use
+in generating keyboard layouts.
 
-### Using KBMSTR.py
+You are able to do this as many times as you want, as the generation can read multiple zip archives.
 
-    > python3 KBMSTR.py [-h] [-config CONFIG] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-gen_size SIZE] [-mutation_rate RATE] [-epsilon EPSILON] [-steps_to_converge STEPS] [-save_stats] [-analyze] [-display] keyboard
+### Not using collect_data.py
+Alternatively, you can dig up some old files (work, novels, code, etc) and convert the contents to .txt files. You will then have to
+compress the collection of files into a .zip archive as the generator requires this file structure.
 
-Important info about config and data (breif)
-##### Arguments
-###### -config
+A visual representation of the structure of a single zip archive:
+    
+    .zip archive
+        |
+        |--------- file1.txt
+        |
+        |--------- file2.txt
+        |
+        |--------- file3.txt
+
+        ...
+
+Again, the program is able to read multiple zip archives - however, each one needs to have this structure.
+
+## Creating a config
+A configuration file is required to generate keyboards. This file defines which fingers a person uses to type which keys, 
+the distances between those keys, alternate key symbols, and whether or not the user returns their fingers to the home row after each keystroke.
+### Using [KBMSTR Online Tool](link-to-site)
+here
+### Not Using KBMSTR Online Tool
+generate_keyboard, json structure
+### The "return_to_home" Flag
+eff.
+
+## Generating the Keyboard
+A quick overview of running KBMSTR.py:
+
+    python3 KBMSTR.py [-h] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-gen_size SIZE] [-mutation_rate RATE] [-epsilon EPSILON] [-steps_to_converge STEPS] [-save_stats] [-analyze] [-display] keyboard config
+
+**Important Note:** the larger the dataset, the longer the program will take (obviously!) 
+
+Be sure to read about the [return_to_home](#the-return_to_home-flag) flag in the configuration file!
+### Positional Arguments
+#### keyboard
 This is very important.
+#### config
 
-### Creating a Configuration File
-#### generate_config.py
-use
+### Optional Arguments
 
-## <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
-### Dataset Sources
+# <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
+## Dataset Sources
 - https://www.gutenberg.org/
-### Included Keyboards
+## Included Keyboards
 - **QWERTY** - Standard
 - **DVORAK** - Less common
 - **SHAKESPEAR**
 - **ENGLISH**
 - **JAVA**
 
-## <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
+# <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
 go to website here is more explanation
