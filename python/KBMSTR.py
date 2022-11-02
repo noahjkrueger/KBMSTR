@@ -118,7 +118,7 @@ class AnalyzeKeyboards:
                 tool.accumulated_cost += self.__cost_matrix[transition] * char_count
             except KeyError:
                 tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])] * char_count
-        out_queue.put((tool.layout, tool.accumulated_cost, list()))
+        out_queue.put((tool.layout, 2 * tool.accumulated_cost, list()))
 
     def _analyze_thread_remain(self, tool, out_queue, distance_limits):
         chk = 0

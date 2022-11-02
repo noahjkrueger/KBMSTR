@@ -1,34 +1,35 @@
-from pynput.keyboard import Key
 from pynput.keyboard import Listener
 from random import choices
-from string import ascii_lowercase
+from string import ascii_lowercase, ascii_uppercase, digits
 from tqdm import tqdm
 import os
 import zipfile
 
-FILE_CHAR_LIM = 1000000
-
+FILE_CHAR_LIM = 10000
 
 class Logger:
     def __init__(self):
         self.__captured = list()
         self.__prog = tqdm(total=FILE_CHAR_LIM)
         self.__num_files = 0
-        self.__dir_name = "".join(choices(ascii_lowercase, k=16))
-        os.mkdir(self.__dir_name)
-        print("Generated 0 files. Press (CTRL-C) to stop capture\nProgress to next file:")
+        self.__dir_name = f"KBMSTR-TEMP-{''.join(choices(ascii_lowercase.join(ascii_uppercase).join(digits), k=16))}"
+        print("Generated 0 files. Press (CTRL-C) to stop capture. Progress to next file:")
 
     def start(self):
+        os.mkdir(self.__dir_name)
         try:
             with Listener(on_press=self._key_event_press) as the_listener:
                 the_listener.join()
         except KeyboardInterrupt:
             self._store_data(rm=1)
-            name = ''.join(choices(ascii_lowercase, k=16))
-            zf = zipfile.ZipFile(f"{name}.zip", "w")
+            try:
+                os.mkdir("KBMSTR-Datasets")
+            except FileExistsError:
+                pass
+            zf = zipfile.ZipFile(f"KBMSTR-Datasets/{self.__dir_name}.zip", "w")
             for dirname, subdirs, files in os.walk(self.__dir_name):
                 for filename in files:
-                    if '.txt' in filename:
+                    if 'KBMSTR.capture.txt' in filename:
                         zf.write(os.path.join(dirname, filename))
             zf.close()
             for root, dirs, files in os.walk(self.__dir_name):
@@ -47,14 +48,16 @@ class Logger:
         os.system('cls' if os.name == 'nt' else 'clear')
         if rm > 0:
             self.__captured = self.__captured[0:(-1 * rm)]
-        with open(f'{self.__dir_name}/{"".join(choices(ascii_lowercase, k=16))}.txt', 'w') as log:
+        with open(f'{self.__dir_name}/{"".join(choices(ascii_lowercase.join(ascii_uppercase).join(digits), k=16))}'
+                  f'.KBMSTR.capture.txt', 'w') as log:
             for the_key in self.__captured:
                 the_key = str(the_key).replace("'", "")
                 log.write(the_key)
-        self.__captured = list()
         self.__prog = tqdm(total=FILE_CHAR_LIM)
         self.__num_files += 1
-        print(f"Generated {self.__num_files} files. Press (CTRL-C) to stop capture\nProgress to next file:")
+        print(f"Generated {self.__num_files} files of {FILE_CHAR_LIM if self.__num_files > 1 else len(self.__captured)}"
+              f" characters. {'Press (CTRL-C) to stop capture. Progress to next file:' if rm == 0 else ''}")
+        self.__captured = list()
 
 
 l = Logger()
