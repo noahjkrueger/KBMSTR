@@ -293,7 +293,7 @@ class GeneticKeyboards:
         for i in range(0, length // 2):
             if random() <= self.__mutate_rate:
                 i1, i2 = 0, 0
-                while i1 == i2 or not mutated[i1] or not mutated[i2]:
+                while i1 == i2 or mutated[i1] or mutated[i2]:
                     i1, i2 = randint(0, length - 1), randint(0, length - 1)
                 mutated[i1] = True
                 mutated[i2] = True
