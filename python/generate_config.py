@@ -28,12 +28,17 @@ def create_config(config_file):
     with open(config_file, 'r') as cfg:
         dic = eval(cfg.read())
         finger_duty = eval(dic['finger_duty'])
+        return_to_home = dic['return_to_home']
+        finger_pos = dic['finger_pos']
     dic['cost_matrix'] = {}
     g = KBGraph()
     for key_a, finger_a in finger_duty.items():
+        if return_to_home and not finger_pos[finger_a] == key_a:
+            continue
         for key_b, finger_b in finger_duty.items():
             if finger_a == finger_b:
                 dic['cost_matrix'][(key_a, key_b)] = g.calc_distance(key_a, key_b)
+
     dic['cost_matrix'] = str(dic['cost_matrix'])
     with open(config_file, 'w') as cfg:
         cfg.write(str(dic))

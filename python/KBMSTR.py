@@ -1,4 +1,6 @@
 import argparse
+import time
+
 import eel
 import os
 import multiprocessing as mp
@@ -115,10 +117,10 @@ class AnalyzeKeyboards:
             responsible_finger = self.__finger_duty[destination]
             transition = (self.__finger_pos[responsible_finger], destination)
             try:
-                tool.accumulated_cost += self.__cost_matrix[transition] * char_count
+                tool.accumulated_cost += self.__cost_matrix[transition] * char_count * 2
             except KeyError:
-                tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])] * char_count
-        out_queue.put((tool.layout, 2 * tool.accumulated_cost, list()))
+                tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])] * char_count * 2
+        out_queue.put((tool.layout, tool.accumulated_cost, list()))
 
     def _analyze_thread_remain(self, tool, out_queue, distance_limits):
         chk = 0
@@ -211,8 +213,9 @@ class GeneticKeyboards:
 
         self.__current_gen_top_performance = inf
         self.__current_gen = [original]
-        for i in range(1, gen_size):
-            self.__current_gen.append(''.join(sample(original, len(original))))
+        while len(self.__current_gen) < gen_size:
+            new_kb = ''.join(sample(original, len(original)))
+            self.__current_gen.append(new_kb)
 
         self.__current_results = None
         self.__judge = AnalyzeKeyboards(dataset, original, config)
@@ -238,15 +241,11 @@ class GeneticKeyboards:
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
             self._print_status()
             new_gen = [self.__best_keyboard]
-            weights = list()
-            for i in range(0, self.__gen_size):
-                if self.__current_results[i].accumulated_cost == inf:
-                    weights.append(0)
-                else:
-                    weights.append((self.__gen_size - i))
             while len(new_gen) < self.__gen_size:
-                parent_a, parent_b = choices(self.__current_gen, weights, k=2)
-                new_gen.append(self._crossover(parent_a, parent_b))
+                parent_1 = self.__current_results[randint(0, self.__gen_size // 20)].layout
+                parent_2 = self.__current_results[randint(0, self.__gen_size // 20)].layout
+                new_kb = self._crossover_mutate(parent_1, parent_2)
+                new_gen.append(new_kb)
             self.__current_gen = new_gen
             self._calculate_fitness()
             self.__gen_number += 1
@@ -270,58 +269,32 @@ class GeneticKeyboards:
             'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         }
 
-    def _mutate(self, keyboard):
-        length = len(keyboard)
-        for i in range(0, len(self.__original)):
-            if random() <= self.__mutate_rate:
-                i1, i2 = randint(0, length - 1), randint(0, length - 1)
-                old = keyboard[i1]
-                keyboard[i1] = keyboard[i2]
-                keyboard[i2] = old
-        return keyboard
-
-    def _crossover(self, parent_a, parent_b):
+    def _crossover_mutate(self, parent_a, parent_b):
+        if random() <= self.__mutate_rate:
+            if bool(getrandbits(1)):
+                parent_a = ''.join(sample(self.__original, len(self.__original)))
+            else:
+                parent_b = ''.join(sample(self.__original, len(self.__original)))
         length = len(self.__original)
-        order = sample([x for x in range(0, length)], length)
-        child = [None for x in range(0, length)]
         used = set()
-        needed_i = set()
-        for i in order:
-            if bool(getrandbits(1)) and parent_a[i] not in used:
+        child = [None for x in range(0, length)]
+        section_start = 0
+        while section_start < length:
+            section_end = section_start
+            while bool(getrandbits(1)) and section_end < length:
+                section_end += 1
+            for i in range(section_start, section_end):
                 child[i] = parent_a[i]
                 used.add(parent_a[i])
-            elif parent_b[i] not in used:
-                child[i] = parent_b[i]
-                used.add(parent_b[i])
-            else:
-                needed_i.add(i)
-        for i in needed_i:
-            down = -1
-            up = 1
-            while True:
-                if i + up == length or (bool(getrandbits(1)) and i + down >= 0):
-                    if bool(getrandbits(1)) and parent_a[i + down] not in used:
-                        child[i] = parent_a[i + down]
-                        used.add(parent_a[i + down])
+            section_start = 2 * section_end - section_start
+        for i in range(0, length):
+            if child[i] is None:
+                for c in parent_b:
+                    if c not in used:
+                        child[i] = c
+                        used.add(c)
                         break
-                    elif parent_b[i + down] not in used:
-                        child[i] = parent_b[i + down]
-                        used.add(parent_b[i + down])
-                        break
-                    else:
-                        down -= 1
-                elif i + up < length:
-                    if bool(getrandbits(1)) and parent_a[i + up] not in used:
-                        child[i] = parent_a[i + up]
-                        used.add(parent_a[i + up])
-                        break
-                    elif parent_b[i + up] not in used:
-                        child[i] = parent_b[i + up]
-                        used.add(parent_b[i + up])
-                        break
-                    else:
-                        up += 1
-        return "".join(self._mutate(child))
+        return "".join(child)
 
     def _calculate_fitness(self):
         self.__judge.update_keyboards(self.__current_gen)
@@ -359,7 +332,7 @@ def show_keyboards(keyboard, config):
     load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], ''.join(alt_k), keyboard['last_analysis'],
                       keyboard['efficiency'],
                       keyboard['dataset_names'])
-    eel.start('index.html', size=(1000, 700))
+    eel.start('index.html', size=(1200, 500))
 
 
 def main(args):
@@ -417,8 +390,8 @@ def main(args):
         "-mutation_rate",
         metavar="RATE",
         type=float,
-        default=0.75,
-        help="Change the rate at which mutations occur. (Default: 0.75) "
+        default=0.5,
+        help="Change the rate at which mutations occur. (Default: 0.5) "
     )
     parser.add_argument(
         "-epsilon",
@@ -455,6 +428,9 @@ def main(args):
     args = parser.parse_args(args)
     with open(args.keyboard, "r") as json_file:
         keyboard = load(json_file)
+        if keyboard['layout'] == "":
+            valid_chars = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
+            keyboard['layout'] = ''.join(sample(valid_chars, len(valid_chars)))
     if args.display:
         show_keyboards(keyboard, args.config)
         exit()

@@ -7,6 +7,7 @@ import zipfile
 
 FILE_CHAR_LIM = 10000
 
+
 class Logger:
     def __init__(self):
         self.__captured = list()
@@ -60,5 +61,6 @@ class Logger:
         self.__captured = list()
 
 
-l = Logger()
-l.start()
+if __name__ == "__main__":
+    l = Logger()
+    l.start()

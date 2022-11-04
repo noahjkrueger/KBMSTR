@@ -58,11 +58,11 @@ seriously. The data collected could possibly contain some sensitive information,
 This data collected is intended for use in the KBMSTR genetic algorithm, and we do not send this data to _anyone_, not
 even ourselves; this data does **not** leave your computer.
 
-Once you have collected enough data, press <kbd>CRTL</kbd> + <kbd>C</kbd> to signal the program to stop. If you exit out of the
+Once you have collected enough data, press <kbd>CRTL</kbd> + <kbd>C</kbd> within the terminal to signal the program to stop. If you exit out of the
 program before doing this, there is no guarantee that all data will be saved and packed nicely into a compressed file - ready for use
 in generating keyboard layouts.
 
-Once the program terminates, a zip file containing all the collected data will appear in the same directory.
+Once the program terminates, a .zip archive containing all the collected data will appear in the same directory.
 You are able to do this as many times as you want, as the generation can read multiple zip archives.
 
 We highly recommend the deletion of this data once a personalized
@@ -118,14 +118,17 @@ generate_keyboard, json structure
 eff.
 
 ## Generating the Keyboard
+**Important Note:** The larger the dataset, the longer the program will take (obviously!)
 
+**Assumption:** The distance to type _SPACE_ key is 0. This holds true in most cases.
+
+**Computation Time Note:** Be sure to read about the [return_to_home](#the-return_to_home-flag) flag in the configuration file!
+<br>
+<br>
+<br>
 A quick overview of running KBMSTR.py:
 
     python3 KBMSTR.py [-h] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-gen_size SIZE] [-mutation_rate RATE] [-epsilon EPSILON] [-steps_to_converge STEPS] [-save_stats] [-analyze] [-display] keyboard config
-
-**Important Note:** the larger the dataset, the longer the program will take (obviously!) 
-
-Be sure to read about the [return_to_home](#the-return_to_home-flag) flag in the configuration file!
 
 ### Positional Arguments
 
@@ -143,8 +146,27 @@ here
 ## Dataset Sources
 - https://www.gutenberg.org/
 
+## Included Configs
+The included configuration files each have two versions. One for returning fingers to the home keys after each keystroke,
+and one for leaving each finger on the last pressed key. These are denoted by:
+
+    *.return.config
+and
+
+    *.remain.config
+
+### HuntPeck
+The HuntPeck configuration assumes that the user is typing with both index fingers, with the left index responsible
+for the left half of the keyboard and the right index for the right.
+
+<img src="docs/images/huntpeck.layout.png" alt="Gear Icon" height="512" id="pre-made-keyboards">
+
+### Standard
+The Standard configuration assumes that the user
+<img src="docs/images/standard.layout.png" alt="Gear Icon" height="512" id="pre-made-keyboards">
+
 ## Included Keyboards
-- 
+
 - **QWERTY** - Standard
 - **DVORAK** - Less common
 - **SHAKESPEAR**
