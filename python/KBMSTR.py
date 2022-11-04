@@ -1,6 +1,4 @@
 import argparse
-import time
-
 import eel
 import os
 import multiprocessing as mp
@@ -9,7 +7,7 @@ import matplotlib.pyplot as plt
 from math import inf
 from sys import argv
 from json import load, dump
-from random import sample, random, choices, getrandbits, randint
+from random import sample, random, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
 from tqdm import tqdm
@@ -138,7 +136,7 @@ class AnalyzeKeyboards:
                 tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
             tool.finger_pos[responsible_finger] = destination
             if chk < len(distance_limits) and count >= distance_limits[chk][0]:
-                if tool.accumulated_cost > 1.25 * distance_limits[chk][1]:
+                if tool.accumulated_cost > 1.1 * distance_limits[chk][1]:
                     tool.accumulated_cost = inf
                     tool.checkpoints = list()
                     break
@@ -374,7 +372,7 @@ def main(args):
         type=int,
         default=100000,
         help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
-             "greater than the 1.25 * last best total distance at every [char_checkpoint] number of characters. Ignored"
+             "greater than the 1.1 * last best total distance at every [char_checkpoint] number of characters. Ignored"
              "if the loaded config has return_to_home flag set True."
     )
     parser.add_argument(
