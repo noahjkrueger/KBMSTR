@@ -138,7 +138,7 @@ class AnalyzeKeyboards:
                 tool.accumulated_cost += self.__cost_matrix[(transition[1], transition[0])]
             tool.finger_pos[responsible_finger] = destination
             if chk < len(distance_limits) and count >= distance_limits[chk][0]:
-                if tool.accumulated_cost > 1.1 * distance_limits[chk][1]:
+                if tool.accumulated_cost > 1.25 * distance_limits[chk][1]:
                     tool.accumulated_cost = inf
                     tool.checkpoints = list()
                     break
@@ -289,9 +289,14 @@ class GeneticKeyboards:
                         child[i] = c
                         used.add(c)
                         break
-        for i in range(0, length):
+        mutated = [False for x in range(0, length)]
+        for i in range(0, length // 2):
             if random() <= self.__mutate_rate:
-                i1, i2 = randint(0, length - 1), randint(0, length - 1)
+                i1, i2 = 0, 0
+                while i1 == i2 or not mutated[i1] or not mutated[i2]:
+                    i1, i2 = randint(0, length - 1), randint(0, length - 1)
+                mutated[i1] = True
+                mutated[i2] = True
                 tmp = child[i1]
                 child[i1] = child[i2]
                 child[i2] = tmp
@@ -369,7 +374,7 @@ def main(args):
         type=int,
         default=100000,
         help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
-             "greater than the 1.1 * last best total distance at every [char_checkpoint] number of characters. Ignored"
+             "greater than the 1.25 * last best total distance at every [char_checkpoint] number of characters. Ignored"
              "if the loaded config has return_to_home flag set True."
     )
     parser.add_argument(
