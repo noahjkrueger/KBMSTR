@@ -270,11 +270,6 @@ class GeneticKeyboards:
         }
 
     def _crossover_mutate(self, parent_a, parent_b):
-        if random() <= self.__mutate_rate:
-            if bool(getrandbits(1)):
-                parent_a = ''.join(sample(self.__original, len(self.__original)))
-            else:
-                parent_b = ''.join(sample(self.__original, len(self.__original)))
         length = len(self.__original)
         used = set()
         child = [None for x in range(0, length)]
@@ -294,6 +289,12 @@ class GeneticKeyboards:
                         child[i] = c
                         used.add(c)
                         break
+        for i in range(0, length):
+            if random() <= self.__mutate_rate:
+                i1, i2 = randint(0, length - 1), randint(0, length - 1)
+                tmp = child[i1]
+                child[i1] = child[i2]
+                child[i2] = tmp
         return "".join(child)
 
     def _calculate_fitness(self):
