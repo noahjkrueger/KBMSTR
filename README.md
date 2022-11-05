@@ -3,7 +3,6 @@
 # <img src="docs/images/book.png" alt="Book Icon" height="32"> Table of Contents
 **[Visit the Official Website!](href)**<br>
 **[Introduction](#introduction)**<br>
-**[Assumptions](#assumptions)**<br>
 **[Installation](#installation)**<br>
 **[Creating a Keyboard](#creating-a-keyboard)**<br>
 **[Pre-made Keyboards](#pre-made-keyboards)**<br>
@@ -42,12 +41,10 @@ And that's it! You are ready to start using the tools!
 # <img src="docs/images/create.png" alt="Hammer Icon" height="32" id="creating-a-keyboard"> Creating a Keyboard
 
 ## Getting a Dataset
-
 Generating a keyboard needs data. We recommend using collect_data.py, but you can provide the data in other ways. We reccomend
 a dataset with at least 1 million (1,000,000) character, but the more the merrier[**](#generating-the-keyboard).
 
 ### Using collect_data.py
-
 This is probably the best way to provide the KBMSTR tool the data it needs. It is simple, non-invasive, and the most accurate
 to your use of the keyboard. We recommend creating a directory to store your data. Navigate to the /python/ directory and type the command:
     
@@ -70,8 +67,7 @@ keyboard layout is generated. You can easily do this with the command **(after y
 
     rm -rf my_data
 
-### Not using collect_data.py
-
+### Not using collect_data.p
 Alternatively, you can dig up some old files (work, novels, code, etc) and convert the contents to .txt files. You will then have to
 compress the collection of files into a .zip archive as the generator requires this file structure. To assist with the conversion of
 files to .txt format, we recommend using a tool such as [Online Convert](https://document.online-convert.com/convert-to-txt). However, 
@@ -100,14 +96,20 @@ A visual representation how the program reads a dataset:
 
 Again, the program is able to read multiple zip archives that may contain other folders - however, only .txt files inside .zip archives will be read.
 
-## Creating a config
+### Included Datasets
+- **books** - Thanks to [Project Guntenberg](https://www.gutenberg.org/), this dataset contains around 300 free books.
+- **brown** - This dataset contains a portion of the Brown English Corpus.
+- **code** - This dataset contains the entire soruce code of the KBMSTR project.
+- **shakespeare** - This dataset contains ever work of William Shakespeare.
 
+## Creating a config
 A configuration file is required to generate keyboards. This file defines which fingers a person uses to type which keys, 
 the distances between those keys, alternate key symbols, and whether or not the user returns their fingers to the home row after each keystroke.
 
 ### Using [KBMSTR Online Tool](link-to-site)
-
-here
+By utilizing this tool, creating a config is very easy! Just select the keys that each finger is responsible for and indicate if
+you prefer to return the fingers back to the home keys or not! All of this is done with a intuitive interface; the configuration file
+is generated for you!
 
 ### Not Using KBMSTR Online Tool
 
@@ -116,6 +118,20 @@ generate_keyboard, json structure
 ### The "return_to_home" Flag
 
 eff.
+
+### Included Configs
+The included configuration files each have two versions. One for returning fingers to the home keys after each keystroke,
+and one for leaving each finger on the last pressed key. These are denoted by:
+
+    *.return.config, *.remain.config
+
+**HuntPeck**: The HuntPeck configuration assumes that the user is typing with both index fingers, with the left index responsible
+for the left half of the keyboard and the right index for the right.
+
+**Standard**: The Standard configuration assumes that the user uses eight fingers to type. This configuration is the standard way
+most people are taught to type on a keyboard.
+
+<img src="docs/images/standard.layout.png" alt="Gear Icon" width="30%" id="pre-made-keyboards"> <img src="docs/images/huntpeck.layout.png" alt="Gear Icon" width="30%" id="pre-made-keyboards">
 
 ## Generating the Keyboard
 **Important Note:** The larger the dataset, the longer the program will take (obviously!)
@@ -143,36 +159,21 @@ here
 
 # <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
 
-## Dataset Sources
-- https://www.gutenberg.org/
-
-## Included Configs
-The included configuration files each have two versions. One for returning fingers to the home keys after each keystroke,
-and one for leaving each finger on the last pressed key. These are denoted by:
-
-    *.return.config
-and
-
-    *.remain.config
-
-### HuntPeck
-The HuntPeck configuration assumes that the user is typing with both index fingers, with the left index responsible
-for the left half of the keyboard and the right index for the right.
-
-<img src="docs/images/huntpeck.layout.png" alt="Gear Icon" height="512" id="pre-made-keyboards">
-
-### Standard
-The Standard configuration assumes that the user
-<img src="docs/images/standard.layout.png" alt="Gear Icon" height="512" id="pre-made-keyboards">
-
 ## Included Keyboards
 
-- **QWERTY** - Standard
-- **DVORAK** - Less common 
-- **SHAKESPEAR**
-- **ENGLISH**
-- **JAVA**
+- **QWERTY** - Standard QWERTY keyboard
+- **DVORAK** - A much less common, but still standard keyboard developed in 1932.
+- **KBMSTR HuntPeck** - two flavors included (remain/return).
+  - Remain: The best keyboard layout for using the HuntPeck method of typing without returning fingers to home keys after each stroke.
+  - Return: The best keyboard layput for using the HuntPeck method of typing with returning fingers to home keys after each stroke.
+- **KBMSTR Standard** - two flavors included (remain/return)
+  - Remain: The best keyboard layout for using the Standard method of typing without returning fingers to home keys after each stroke.
+  - Return: The best keyboard layput for using the Standard method of typing with returning fingers to home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
+By visting [The Official KBMSTR Website](link-to-site), a user will be able to practice their typing both on the keyboard
+layouts previously mentioned as well as their own personalized keyboards. Users are presented with the option to upload their
+own personalized keyboard and configuration to the website (produced by our other tools!) that will then display a virtual keyboard.
+It is here where a user is able to use their physical keyboard to practice their new keyboard, or just try out their results.
 
-go to website here is more explanation
+Challange youself and improve your typing speed!
