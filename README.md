@@ -5,7 +5,6 @@
 **[Introduction](#introduction)**<br>
 **[Installation](#installation)**<br>
 **[Creating a Keyboard](#creating-a-keyboard)**<br>
-**[Pre-made Keyboards](#pre-made-keyboards)**<br>
 **[Practice New Keyboards](#practice-new-keyboards)**<br>
 
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
@@ -116,8 +115,22 @@ is generated for you!
 generate_keyboard, json structure
 
 ### The "return_to_home" Flag
+This is a magical flag, deserving of its own section. It is this flag within the configuration file that changes how keyboard 
+layouts are generated, both in terms of final layout and efficiency. 
 
-eff.
+After the dataset is ititialized, how the data is used differs with respect to the value of this flag.
+
+When this flag is set to 'True', the fitness judgement of
+each keyboard in each generation assumes that once a keystroke is completed by a finger, that finger returns to it's initial position.
+This means that the program can calculate the fitness for a keyboard in constant time; we can simply calculate the distance from the home 
+key to the key corresponding to the character times the numer of occurrences of that character (times two, as the finger moves back to the home key).
+
+However, what if we care about the order of the keys? This is where setting this flag to 'False' comes into play.
+With this configuration, the fitness judgement of each keybaord in each generation assumes that one a key is pressed, the finger
+remains there untill the same finger is needed again (i.e. the finger does not return to home). This is more accurate to how a person
+actually types, but in order to achieve this, more complex calculations are needed. As a result, we need to iterate through each
+character of the dataset for each keyboard in order to preserve the ordering of charters. This means that calculating the fitness
+for each generation is a linear operation, and thus the larger the dataset, the longer this will take.
 
 ### Included Configs
 The included configuration files each have two versions. One for returning fingers to the home keys after each keystroke,
@@ -131,14 +144,15 @@ for the left half of the keyboard and the right index for the right.
 **Standard**: The Standard configuration assumes that the user uses eight fingers to type. This configuration is the standard way
 most people are taught to type on a keyboard.
 
-<img src="docs/images/standard.layout.png" alt="Gear Icon" width="30%" id="pre-made-keyboards"> <img src="docs/images/huntpeck.layout.png" alt="Gear Icon" width="30%" id="pre-made-keyboards">
+<img src="docs/images/standard.layout.png" alt="standard typing config" width="45%"> <img src="docs/images/huntpeck.layout.png" alt="hunt peck typing config" width="45%">
 
 ## Generating the Keyboard
-**Important Note:** The larger the dataset, the longer the program will take (obviously!)
-
 **Assumption:** The distance to type _SPACE_ key is 0. This holds true in most cases.
 
-**Computation Time Note:** Be sure to read about the [return_to_home](#the-return_to_home-flag) flag in the configuration file!
+**Computation Time Note:** If it is taking to long to find a keyboard layout, try a combination of the following (with most effecitve first):
+- Change the ['return_to_home'](#the-return_to_home-flag) flag to 'False' in your configuration.
+- Use a smaller dataset to generate the keyboard.
+- Change the [char_checkpoint]() optional flag w
 <br>
 <br>
 <br>
