@@ -320,11 +320,12 @@ class GeneticKeyboards:
 def show_keyboards(keyboard, config):
     eel.init('display')
 
-    def load_json_to_html(name, layout, layout_alt_keys, last_analysis, efficiency, datasets):
-        eel.read_data(name, layout, layout_alt_keys, last_analysis, efficiency, datasets)
+    def load_json_to_html(name, layout, layout_alt_keys, finger_res, last_analysis, efficiency, datasets):
+        eel.read_data(name, layout, layout_alt_keys, finger_res, last_analysis, efficiency, datasets)
     with open(config, 'r') as cfg:
         dic = eval(cfg.read())
         alt_keys = dic['alt_keys']
+        finger_duty = eval(dic['finger_duty'])
     alt_k = []
     for c in keyboard['layout']:
         if c not in alt_keys.values():
@@ -333,7 +334,10 @@ def show_keyboards(keyboard, config):
             for k, v in alt_keys.items():
                 if v == c:
                     alt_k.append(k)
-    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], ''.join(alt_k), keyboard['last_analysis'],
+    res = [None for x in range(0, len(keyboard['layout']))]
+    for pos, resp in finger_duty.items():
+        res[pos] = resp
+    load_json_to_html(keyboard['name'].split("/")[-1], keyboard['layout'], ''.join(alt_k), res, keyboard['last_analysis'],
                       keyboard['efficiency'],
                       keyboard['dataset_names'])
     eel.start('index.html', size=(1200, 500))

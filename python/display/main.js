@@ -1,8 +1,8 @@
 
 eel.expose(read_data);
 const og_layout = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./";
-// read_data("test", "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./", "~!@#$%^&*()_+QWERTYUIOp{}|ASDFGHJKL:\"ZXCVBNM<>?", "none", 0, "none");
-function read_data(kb_name, kb_layout, alt_kb_layout, kb_last_analysis, kb_efficiency, kb_datasets) {
+// read_data("test", "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./", "~!@#$%^&*()_+QWERTYUIOp{}|ASDFGHJKL:\"ZXCVBNM<>?", [], "none", 0, "none");
+function read_data(kb_name, kb_layout, alt_kb_layout, finger_res, kb_last_analysis, kb_efficiency, kb_datasets) {
     document.getElementById("keyboard-name").innerText = "The " + kb_name + " keyboard";
     
     let keyboard_div = document.getElementById("keyboard");
@@ -31,11 +31,13 @@ function read_data(kb_name, kb_layout, alt_kb_layout, kb_last_analysis, kb_effic
             let og = og_layout.substring(count, count+1);
             let alt = alt_kb_layout.substring(count, count+1);
             let keyy = document.createElement("div");
-            let char1 = document.createElement("div");
-            keyy.setAttribute("key_map", og+(alt_kb_layout.charAt(kb_layout.indexOf(og))));
             if (og ==='\\') {
                 keyy.setAttribute("key_map", '|');
             }
+            else {
+                keyy.setAttribute("key_map", og+(alt_kb_layout.charAt(kb_layout.indexOf(og))));
+            }
+            let char1 = document.createElement("div");
             char1.innerText = cc.toUpperCase();
             if (alt.toUpperCase() == cc.toUpperCase()) {
                 keyy.classList.add("key");
@@ -49,6 +51,7 @@ function read_data(kb_name, kb_layout, alt_kb_layout, kb_last_analysis, kb_effic
                 keyy.appendChild(char2);
             }
             keyy.appendChild(char1);
+            keyy.classList.add(finger_res[count]);
             row.appendChild(keyy);
             count += 1;
         }

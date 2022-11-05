@@ -12,7 +12,6 @@
 }
 
 .keyboard {
-    
     text-align: center;
     font-size: 1.25vw;
     font-family: sans-serif;
@@ -53,7 +52,7 @@
 
 .keyrow > * {
     position: relative;
-    background: rgb(255, 255, 255);
+    background: #dadada;
     text-align: center;
     color: #000;
     float: left;
@@ -71,21 +70,25 @@
     -khtml-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;
-    box-shadow: 0 0.2em 0 0.05em #a8a8a8;
+    box-shadow: 0 0.2em 0 0.05em #000000;
 }
 
 .keyrow > div[caps-on],
 .keyrow > div:active {
-    box-shadow: 0 0.2em 0 0.05em #a09eff;
-    border: 2px solid #a09eff;
+    background: #000000;
+    color: #FFFFFF;
+    position: relative;
+    top: 0.2em;
+    box-shadow: none;
 }
 
 .keyrow > div[data-pressed],
 .keyrow > div:active {
-    background: #ff9e9e;
+    background: #000000;
+    color: #FFFFFF;
     position: relative;
     top: 0.2em;
-    box-shadow: 0 0 0 0.05em black;
+    box-shadow: none;
 }
 
 .kw1 {
@@ -103,3 +106,35 @@
 .kw4 {
     width: 21.5em;
 } 
+
+.l_p {
+    background: #ff515188;
+}
+
+.l_r {
+    background: #ff9f5a88;
+}
+
+.l_m {
+    background: #40b53388;
+}
+
+.l_i {
+    background: #3aceff88;
+}
+
+.r_i {
+    background: #c294ff88;
+}
+
+.r_m {
+    background: #afebff88;
+}
+
+.r_r {
+    background: #fff86b88;
+}
+
+.r_p {
+    background: #7dff9b88;
+}

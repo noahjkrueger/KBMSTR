@@ -168,7 +168,7 @@ The Standard configuration assumes that the user
 ## Included Keyboards
 
 - **QWERTY** - Standard
-- **DVORAK** - Less common
+- **DVORAK** - Less common 
 - **SHAKESPEAR**
 - **ENGLISH**
 - **JAVA**
