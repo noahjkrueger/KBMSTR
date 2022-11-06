@@ -112,13 +112,13 @@ is generated for you!
 
 ### Not Using KBMSTR Online Tool
 
-generate_keyboard, json structure
+json structure
 
 ### The "return_to_home" Flag
 This is a magical flag, deserving of its own section. It is this flag within the configuration file that changes how keyboard 
 layouts are generated, both in terms of final layout and efficiency. 
 
-After the dataset is ititialized, how the data is used differs with respect to the value of this flag.
+After the dataset is initialized, how the data is used differs with respect to the value of this flag.
 
 When this flag is set to 'True', the fitness judgement of
 each keyboard in each generation assumes that once a keystroke is completed by a finger, that finger returns to it's initial position.
@@ -126,8 +126,8 @@ This means that the program can calculate the fitness for a keyboard in constant
 key to the key corresponding to the character times the numer of occurrences of that character (times two, as the finger moves back to the home key).
 
 However, what if we care about the order of the keys? This is where setting this flag to 'False' comes into play.
-With this configuration, the fitness judgement of each keybaord in each generation assumes that one a key is pressed, the finger
-remains there untill the same finger is needed again (i.e. the finger does not return to home). This is more accurate to how a person
+With this configuration, the fitness judgement of each keyboard in each generation assumes that one a key is pressed, the finger
+remains there until the same finger is needed again (i.e. the finger does not return to home). This is more accurate to how a person
 actually types, but in order to achieve this, more complex calculations are needed. As a result, we need to iterate through each
 character of the dataset for each keyboard in order to preserve the ordering of charters. This means that calculating the fitness
 for each generation is a linear operation, and thus the larger the dataset, the longer this will take.
@@ -136,7 +136,7 @@ for each generation is a linear operation, and thus the larger the dataset, the 
 The included configuration files each have two versions. One for returning fingers to the home keys after each keystroke,
 and one for leaving each finger on the last pressed key. These are denoted by:
 
-    *.return.config, *.remain.config
+    *.return.config.json, *.remain.config.json
 
 **HuntPeck**: The HuntPeck configuration assumes that the user is typing with both index fingers, with the left index responsible
 for the left half of the keyboard and the right index for the right.

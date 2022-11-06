@@ -280,10 +280,12 @@ class GeneticKeyboards:
             new_gen = [self.__best_kb_cost_pair[0]]
             current_results = self.__judge.get_ordered_results()
             while len(new_gen) < self.__gen_size:
-                parent_1 = current_results[randint(0, self.__gen_size // 20)][0]
-                parent_2 = current_results[randint(0, self.__gen_size // 20)][0]
-                new_kb = self._crossover_mutate(parent_1, parent_2)
-                new_gen.append(new_kb)
+                # See comment over self._crossover_mutate
+                # parent_1 = current_results[0][0]
+                # parent_2 = current_results[randint(1, int(math.sqrt(self.__gen_size)))][0]
+                # new_kb = self._crossover_mutate(parent_1, parent_2)
+                # new_gen.append(new_kb)
+                new_gen.append(self._mutate(list(current_results[0][0])))
             self.__current_gen = new_gen
             self._calculate_fitness()
             self.__gen_number += 1
@@ -308,7 +310,7 @@ class GeneticKeyboards:
         }
 
     def _mutate(self, kb):
-        length = len(self.__original)
+        length = len(kb)
         mutated = [False for x in range(0, length)]
         for i in range(0, length // 2):
             if random() <= self.__mutate_rate:
@@ -320,13 +322,19 @@ class GeneticKeyboards:
                 tmp = kb[i1]
                 kb[i1] = kb[i2]
                 kb[i2] = tmp
-        return kb
+        return "".join(kb)
 
+    # I found that just mutating the best keyboard gets better results, so this is not used.
+    # might be useful another time.
     def _crossover_mutate(self, parent_a, parent_b):
         length = len(self.__original)
         used = set()
         child = ["" for x in range(0, length)]
-        section_start = 0
+        section_start = randint(0, length)
+        section_end = randint(section_start, length)
+        for i in range(section_start, section_end):
+            child[i] = parent_a[i]
+            used.add(parent_a[i])
         while section_start < length:
             section_end = section_start
             while bool(getrandbits(1)) and section_end < length:
@@ -342,7 +350,7 @@ class GeneticKeyboards:
                         child[i] = c
                         used.add(c)
                         break
-        return "".join(self._mutate(child))
+        return "".join(child)
 
     def _calculate_fitness(self):
         self.__judge.update_keyboards(self.__current_gen)
