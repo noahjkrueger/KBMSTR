@@ -8,7 +8,7 @@
   - [Getting a Dataset](#getting-a-dataset)
   - [Creating a Config](#creating-a-config)
   - [Generating the Keyboard](#generating-the-keyboard)
-- **[Pre-Made Keyboards](#pre-made-keyboards-pre-made-keyboards)**
+- **[Pre-Made Keyboards](#pre-made-keyboards)**
 - **[Practice New Keyboards](#practice-new-keyboards)**
 
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
@@ -195,7 +195,7 @@ for the left half of the keyboard and the right index for the right.
 **Standard**: The Standard configuration assumes that the user uses eight fingers to type. This configuration is the standard way
 most people are taught to type on a keyboard.
 
-<img src="docs/images/standard.layout.png" alt="standard typing config" width="50%"> 
+<img src="docs/images/standard.layout.png" alt="standard typing config" width="45%"> 
 
 ## Generating the Keyboard
 **Assumption:** The distance to type _SPACE_ key is 0. This holds true in most cases.
