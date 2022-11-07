@@ -1,7 +1,7 @@
 
 eel.expose(read_data);
 const og_layout = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./";
-// read_data("test", "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./", "~!@#$%^&*()_+QWERTYUIOp{}|ASDFGHJKL:\"ZXCVBNM<>?", [], "none", 0, "none");
+// read_data("test", "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./", "~!@#$%^&*()_+QWERTYUIOp{}|ASDFGHJKL:\"ZXCVBNM<>?", , "none", 0, "none");
 function read_data(kb_name, kb_layout, alt_kb_layout, finger_res, kb_last_analysis, kb_efficiency, kb_datasets) {
     document.getElementById("keyboard-name").innerText = "The " + kb_name + " keyboard";
     
@@ -39,7 +39,7 @@ function read_data(kb_name, kb_layout, alt_kb_layout, finger_res, kb_last_analys
             }
             let char1 = document.createElement("div");
             char1.innerText = cc.toUpperCase();
-            if (alt.toUpperCase() == cc.toUpperCase()) {
+            if (alt.toUpperCase() === cc.toUpperCase()) {
                 keyy.classList.add("key");
                 keyy.setAttribute("key_char", cc);
             }

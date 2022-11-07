@@ -385,11 +385,10 @@ def show_keyboards(keyboard, path_to_config):
             for k, v in config.alt_keys.items():
                 if v == c:
                     alt_k.append(k)
-
     load_json_to_html(
         keyboard['name'].split("/")[-1],
         keyboard['layout'],
-        ''.join(alt_k),
+        "".join(alt_k),
         config.get_finger_duty_list(),
         keyboard['last_analysis'],
         keyboard['efficiency'],
