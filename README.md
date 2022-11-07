@@ -8,7 +8,7 @@
   - [Getting a Dataset](#getting-a-dataset)
   - [Creating a Config](#creating-a-config)
   - [Generating the Keyboard](#generating-the-keyboard)
-- **[Pre-Made Keyboards](#pre-made-keyboards-pre-made-keyboards)**
+- **[Pre-Made Keyboards](#pre-made-keyboards)**
 - **[Practice New Keyboards](#practice-new-keyboards)**
 
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
