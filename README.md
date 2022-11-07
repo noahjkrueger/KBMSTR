@@ -186,10 +186,12 @@ and one for leaving each finger on the last pressed key. These are denoted by:
 **HuntPeck**: The HuntPeck configuration assumes that the user is typing with both index fingers, with the left index responsible
 for the left half of the keyboard and the right index for the right.
 
+<img src="docs/images/huntpeck.layout.png" alt="hunt peck typing config" width="45%">
+
 **Standard**: The Standard configuration assumes that the user uses eight fingers to type. This configuration is the standard way
 most people are taught to type on a keyboard.
 
-<img src="docs/images/standard.layout.png" alt="standard typing config" width="45%"> <img src="docs/images/huntpeck.layout.png" alt="hunt peck typing config" width="45%">
+<img src="docs/images/standard.layout.png" alt="standard typing config" width="50%"> 
 
 ## Generating the Keyboard
 **Assumption:** The distance to type _SPACE_ key is 0. This holds true in most cases.
@@ -199,8 +201,7 @@ most people are taught to type on a keyboard.
 - Use a smaller dataset to generate the keyboard.
 - Increase the value of the [char_checkpoint](#char_checkpoint) optional argument
 <br>
-<br>
-<br>
+
 A quick overview of running KBMSTR.py:
 
 
