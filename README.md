@@ -30,9 +30,9 @@ and reduce hand fatigue while using the computer.
 To get started, clone this repo:
 
     git clone https://github.com/noahjkrueger/KBMSTR.git
-You can also download the .zip archive. Once you have the files unzipped, navigate to /python/
+You can also download the .zip archive. Once you have the files unzipped, navigate to /KBMSTR
 
-    cd KBMSTR/python
+    cd KBMSTR/
 And install the required libraries:
 
     pip install -r requirements.txt
@@ -42,7 +42,7 @@ And that's it! You are ready to start using the tools!
 
 ## Getting a Dataset
 Generating a keyboard needs data. We recommend using collect_data.py, but you can provide the data in other ways. We reccomend
-a dataset with at least 1 million (1,000,000) character, but the more the merrier[**](#generating-the-keyboard).
+a dataset with at least 1 million (1,000,000) characters, but the more the merrier[**](#generating-the-keyboard).
 
 ### Using collect_data.py
 This is probably the best way to provide the KBMSTR tool the data it needs. It is simple, non-invasive, and the most accurate
@@ -141,7 +141,7 @@ of alternative keys for a better layout - something we hope to do in the future.
 
 #### finger_duty
 This data structure is an array that represents which finger is responsible or which key. The index of each value is the
-key the value is responsible for. For this to integrate with the [-display](#display) argument and the [KBMSTR webapp](link-to-site), 
+key the value is responsible for. For this to integrate with the [display](#display) argument and the [KBMSTR webapp](link-to-site), 
 there must be a value for each index that is one of the following:
 - "l_p": the left pinky finger is responsible.
 - "l_r": the left ring finger is responsible.
@@ -161,7 +161,8 @@ For example, if finger_duty only contains the left and right index finger:
 
     "original_finger_position": {
       "l_i": Integer,
-      "r_i": Integer
+      "r_i": Integer,
+      ...
     }
 
 ### The "return_to_home" Flag
