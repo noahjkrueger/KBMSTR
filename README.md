@@ -1,11 +1,15 @@
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="64"> KBMSTR - Personalized Keyboards
 
 # <img src="docs/images/book.png" alt="Book Icon" height="32"> Table of Contents
-**[Visit the Official Website!](href)**<br>
-**[Introduction](#introduction)**<br>
-**[Installation](#installation)**<br>
-**[Creating a Keyboard](#creating-a-keyboard)**<br>
-**[Practice New Keyboards](#practice-new-keyboards)**<br>
+- **[Visit the Official Website!](href)**
+- **[Introduction](#introduction)**
+- **[Installation](#installation)**
+- **[Creating a Keyboard](#creating-a-keyboard)**
+  - [Getting a Dataset](#getting-a-dataset)
+  - [Creating a Config](#creating-a-config)
+  - [Generating the Keyboard](#generating-the-keyboard)
+- **[Pre-Made Keyboards](#pre-made-keyboards-pre-made-keyboards)**
+- **[Practice New Keyboards](#practice-new-keyboards)**
 
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
 
@@ -18,7 +22,7 @@ layout, personalized to an individual, is involved, yet simple. KBMSTR works wit
 from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](link-to-website).
 Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](link-to-website) to let the algorithm know
 actual typing habits, KBMSTR will then utilize these two items to employ a genetic algorithm to find the absolute best keyboard layout
-for you. This, paired with [KBMSTR's practice tool](link-to-website) allow for users to dramatically speed up their typing speeds
+for you. This, paired with [KBMSTR's practice tool](link-to-website) allow for users to dramaGtically speed up their typing speeds
 and reduce hand fatigue while using the computer.
 
 # <img src="docs/images/download.png" alt="Download Icon" height="32" id="installation"> Installation
@@ -295,9 +299,6 @@ and the [config argument](#config). The program will start a new window displayi
 as defined in keyboard and config.
 
 # <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
-
-## Included Keyboards
-
 - **QWERTY** - Standard QWERTY keyboard
 - **DVORAK** - A much less common, but still standard keyboard developed in 1932.
 - **KBMSTR HuntPeck** - two flavors included (remain/return).
