@@ -446,8 +446,8 @@ def main(args):
         "-gen_size",
         metavar="SIZE",
         type=int,
-        default=250,
-        help="Chose the number of members for each generation. (Default: 250)"
+        default=2500,
+        help="Chose the number of members for each generation. (Default: 2500)"
     )
     parser.add_argument(
         "-mutation_rate",

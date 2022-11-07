@@ -26,15 +26,12 @@ and reduce hand fatigue while using the computer.
 To get started, clone this repo:
 
     git clone https://github.com/noahjkrueger/KBMSTR.git
-
 You can also download the .zip archive. Once you have the files unzipped, navigate to /python/
 
     cd KBMSTR/python
-
 And install the required libraries:
 
     pip install -r requirements.txt
-
 And that's it! You are ready to start using the tools!
 
 # <img src="docs/images/create.png" alt="Hammer Icon" height="32" id="creating-a-keyboard"> Creating a Keyboard
@@ -48,7 +45,6 @@ This is probably the best way to provide the KBMSTR tool the data it needs. It i
 to your use of the keyboard. We recommend creating a directory to store your data. Navigate to the /python/ directory and type the command:
     
     mkdir my_data && mv collect_data.py my_data && python3 my_data/collect_data.py
-
 A process will start and every key you type will be recorded. **DO NOT UPLOAD THIS DATA ANYWHERE** - KBMSTR takes privacy very
 seriously. The data collected could possibly contain some sensitive information, such as _passwords_ and _personal information_.
 This data collected is intended for use in the KBMSTR genetic algorithm, and we do not send this data to _anyone_, not
@@ -66,7 +62,7 @@ keyboard layout is generated. You can easily do this with the command **(after y
 
     rm -rf my_data
 
-### Not using collect_data.p
+### Not using collect_data.py
 Alternatively, you can dig up some old files (work, novels, code, etc) and convert the contents to .txt files. You will then have to
 compress the collection of files into a .zip archive as the generator requires this file structure. To assist with the conversion of
 files to .txt format, we recommend using a tool such as [Online Convert](https://document.online-convert.com/convert-to-txt). However, 
@@ -92,13 +88,12 @@ A visual representation how the program reads a dataset:
             |             ...           |
             |                           |--------- file2.txt
              ...                         ...
-
 Again, the program is able to read multiple zip archives that may contain other folders - however, only .txt files inside .zip archives will be read.
 
 ### Included Datasets
 - **books** - Thanks to [Project Guntenberg](https://www.gutenberg.org/), this dataset contains around 300 free books.
 - **brown** - This dataset contains a portion of the Brown English Corpus.
-- **code** - This dataset contains the entire soruce code of the KBMSTR project.
+- **code** - This dataset contains the entire source code of the KBMSTR project.
 - **shakespeare** - This dataset contains ever work of William Shakespeare.
 
 ## Creating a config
@@ -108,11 +103,62 @@ the distances between those keys, alternate key symbols, and whether or not the 
 ### Using [KBMSTR Online Tool](link-to-site)
 By utilizing this tool, creating a config is very easy! Just select the keys that each finger is responsible for and indicate if
 you prefer to return the fingers back to the home keys or not! All of this is done with a intuitive interface; the configuration file
-is generated for you!
+is generated for you! This is the recommended method.
 
 ### Not Using KBMSTR Online Tool
+For reference while creating a configuration using this method, check out [a pre-made config](#included-configs)
+A usable config is  a JSON file structured as:
+  
+    {
+      "return_to_home": Bool,
+      "alt_keys": {
+        ...
+      },
+      "finger_duty": [ ... ],
+      "original_finger_position": {
+        ...
+      }
+    }
+#### return_to_home
+See ['The "return_to_home" Flag](#the-return_to_home-flag) for explanation. Boolean.
 
-json structure
+#### alt_keys
+This data structure maps a String to String. They keys of each is the alternative input for a key (when pressing shift),
+and the values is the input of the key (not pressing shift). For example:
+
+    "alt_keys": {
+        "!": "1",
+        ":": ";",
+        "X": "x",
+        ...
+      }
+These are usually the same for every keyboard - we have not expanded the problem to consider switching around the values
+of alternative keys for a better layout - something we hope to do in the future.
+
+#### finger_duty
+This data structure is an array that represents which finger is responsible or which key. The index of each value is the
+key the value is responsible for. For this to integrate with the [-display](#display) argument and the [KBMSTR webapp](link-to-site), 
+there must be a value for each index that is one of the following:
+- "l_p": the left pinky finger is responsible.
+- "l_r": the left ring finger is responsible.
+- "l_m": the left middle finger is responsible.
+- "l_i": the left index finger is responsible.
+- "r_i": the right index finger is responsible.
+- "r_m": the right middle finger is responsible.
+- "r_r": the right ring finger is responsible.
+- "r_p": the right pinky finger is responsible.
+The length of this array must be equal to the length of the layout, i.e. a one-to-one mapping.
+
+#### original_finger_position
+This data structure represents your home keys, or where your fingers start when you start typing.
+You must have a home key for each finger contained in the [finger_duty](#finger_duty).
+
+For example, if finger_duty only contains the left and right index finger:
+
+    "original_finger_position": {
+      "l_i": Integer,
+      "r_i": Integer
+    }
 
 ### The "return_to_home" Flag
 This is a magical flag, deserving of its own section. It is this flag within the configuration file that changes how keyboard 
@@ -137,7 +183,6 @@ The included configuration files each have two versions. One for returning finge
 and one for leaving each finger on the last pressed key. These are denoted by:
 
     *.return.config.json, *.remain.config.json
-
 **HuntPeck**: The HuntPeck configuration assumes that the user is typing with both index fingers, with the left index responsible
 for the left half of the keyboard and the right index for the right.
 
@@ -152,24 +197,101 @@ most people are taught to type on a keyboard.
 **Computation Time Note:** If it is taking to long to find a keyboard layout, try a combination of the following (with most effecitve first):
 - Change the ['return_to_home'](#the-return_to_home-flag) flag to 'False' in your configuration.
 - Use a smaller dataset to generate the keyboard.
-- Change the [char_checkpoint]() optional flag w
+- Increase the value of the [char_checkpoint](#char_checkpoint) optional argument
 <br>
 <br>
 <br>
 A quick overview of running KBMSTR.py:
 
+
     python3 KBMSTR.py [-h] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-gen_size SIZE] [-mutation_rate RATE] [-epsilon EPSILON] [-steps_to_converge STEPS] [-save_stats] [-analyze] [-display] keyboard config
 
 ### Positional Arguments
-
+These arguments are required for every use of KBMSTR.py
 #### keyboard
+The value of this argument is the path to a keyboard JSON file. If you are generating a fresh keyboard, use:
+    
+    keyboards/generic.json
 
-This is very important.
+If you wish to analyze a keyboard against dataset(s) or display the keyboard, this value is the path to that keyboard.
 
 #### config
-here
+The values of this argument is the path to a [configuration file](#included-configs). This tells the program
+useful information, such as what fingers are responsible for what keys, the home keys, whether or not fingers return to the home
+keys, and the mapping from alternative keys.
 
 ### Optional Arguments
+These arguments change the behavior of KBMSTR.py
+
+#### dataset
+This argument is an optional argument only because of another argument, [display](#display).
+It is required for analyzing or generating a keyboard layout. The value for this argument
+is a path the the directory that houses the datasets to use. This argument is ignored if
+the [display](#display) argument is present.
+
+#### char_checkpoint
+This argument is an Integer representation of how many characters the program should iterate through
+when calculating the fitness of any one keyboard. When this threshold is met, the accumulated cost so
+far is checked agianst the accumulated cost of the best keyboard at this point. If it is greater than a 
+small margin of the best keyboard, the calculation of the keyboard is stopped as we heuristically
+consider this keyboard worse than the best. This often saves computation time, but can lead to 
+potentially discarding a better keyboard if the value is too low. The larger the dataset, 
+the larger this number should be. This value is defaulted to 100,000. This argument is ignored
+if the [return_to_home](#the-return_to_home-flag) in the configuration is set to True, or if
+the [display](#display) or [analyze](#analyze) arguments are present.
+
+#### name
+The value of this argument is a string and will be the name of the keyboard outputted, the file
+containing the keyboard, and the generation statistic graph is the [save_stats](#save_stats)
+argument is present. The default is the time and day the program terminates.
+This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+
+#### gen_size
+The value of this argument is an Integer that will become the size of each generation. You may notice that at each generation, the status bar 
+indicates a smaller number of keyboards than the selected generation size. This is OK - all this means is that there were 
+duplicate layouts when the new generation was created - we don't need to calculate the fitness of the same layout twice! 
+However, duplicate layouts are not linted across generations (Too many possible layouts!). The value is defaulted to 2500.
+This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+
+#### mutation_rate
+The value of this argument is a Float representation of what percentage of keys will be swapped when new
+keyboard layouts are being generated for fitness calculation. If set to 1.0, each generation will be completely random.
+This should be a value greater than 0.0 to preserve generational diversity. The default is 0.1. This argument
+is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+
+#### epsilon
+The value of this argument is a Float representing the threshold in which to call no change between generations. If the change
+between the last generation and the current generation is less than this value, the program will increment 
+the step number to indicate convergence. Also see (steps_to_converge)[#steps_to_converge]. The default is
+0.0, this is mostly here if one wishes for the program to complete quicker by not caring about small improvements.
+This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+
+#### steps_to_converge
+This argument is an Integer representing the number of steps needed in a row for the program
+to deem convergence. For each generation, if the change in efficiency is less than the [epsilion values](#epsilon),
+the program takes a step. Once the number of steps is equal to this value, the program considers the current
+best keyboard as the absolute best keyboard. Steps are reset to 0 if the change between generations is greater
+than epsilon. The default value is 10. This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+
+#### save_stats
+The presence of this flag tells the program to keep track of the best efficiency of each generation in order
+to create a visual representation of efficiency as the keyboard layouts evolve. There is no value for this flag.
+When the program terminates, the created image will be saved to:
+
+    /run_stats/
+with the name indicated in the [name argument](#name). The default value is 10. This argument is ignored if the
+[display](#display) or [analyze](#analyze) arguments are present.
+
+#### analyze
+The presence of this argument ignores everything except the [dataset argument](#dataset), the [keyboard argument](#keyboard)
+and the [config argument](#config). The program will analyze the efficiency of the keyboard provided using the
+config and dataset provided. On program termination, the file passed into the keyboard argument will be overwritten
+to reflect this analysis.
+
+#### display
+The presence of this argument ignores everything except the [keyboard argument](#keyboard)
+and the [config argument](#config). The program will start a new window displaying a virtual keyboard
+as defined in keyboard and config.
 
 # <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
 
@@ -185,9 +307,9 @@ here
   - Return: The best keyboard layput for using the Standard method of typing with returning fingers to home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
-By visting [The Official KBMSTR Website](link-to-site), a user will be able to practice their typing both on the keyboard
+By visiting [The Official KBMSTR Website](link-to-site), a user will be able to practice their typing both on the keyboard
 layouts previously mentioned as well as their own personalized keyboards. Users are presented with the option to upload their
 own personalized keyboard and configuration to the website (produced by our other tools!) that will then display a virtual keyboard.
 It is here where a user is able to use their physical keyboard to practice their new keyboard, or just try out their results.
 
-Challange youself and improve your typing speed!
+Challenge yourself and improve your typing speed!
