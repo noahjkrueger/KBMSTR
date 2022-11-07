@@ -178,11 +178,11 @@ class AnalyzeKeyboards:
                 cost += self.__config.cost_matrix[(transition[1], transition[0])]
             finger_pos[responsible_finger] = destination
             if chk < len(self.__distance_limits) and count >= self.__distance_limits[chk][0]:
-                if cost > 1.1 * self.__distance_limits[chk][1]:
+                if cost > self.__distance_limits[chk][1]:
                     cost = math.inf
                     break
                 elif get_check:
-                    checkpoints.append((self.__distance_limits[chk][0], cost))
+                    checkpoints.append((1.01 * self.__distance_limits[chk][0], cost))
                 chk += 1
             count += 1
         if get_check:
@@ -270,7 +270,7 @@ class GeneticKeyboards:
               f"Best Efficiency:{self.__best_kb_cost_pair[1] / self.__judge.get_num_valid_chars():>20}\n"
               f"Δ:{self.__delta:>34}\n"
               f"ε:{self.__epsilon:>34}\n"
-              f"Steps:{self.__num_steps:>28}/{self.__steps_to_converge}\n"
+              f"Steps:{self.__num_steps:>27}/{self.__steps_to_converge}\n"
               f"Generation Size: {self.__gen_size:>19}\n"
               f"Mutation Rate:{self.__mutate_rate:>22}\n\n")
 
@@ -280,11 +280,14 @@ class GeneticKeyboards:
             new_gen = [self.__best_kb_cost_pair[0]]
             current_results = self.__judge.get_ordered_results()
             while len(new_gen) < self.__gen_size:
-                # See comment over self._crossover_mutate
+                # !!!! See comment over self._crossover_mutate
+
                 # parent_1 = current_results[0][0]
                 # parent_2 = current_results[randint(1, int(math.sqrt(self.__gen_size)))][0]
                 # new_kb = self._crossover_mutate(parent_1, parent_2)
                 # new_gen.append(new_kb)
+
+                # !!!! Remove the line below if you use the code segment above
                 new_gen.append(self._mutate(list(current_results[0][0])))
             self.__current_gen = new_gen
             self._calculate_fitness()
@@ -428,8 +431,8 @@ def main(args):
         type=int,
         default=100000,
         help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
-             "greater than the 1.1 * last best total distance at every [char_checkpoint] number of characters. Ignored"
-             "if the loaded config has return_to_home flag set True."
+             "greater (within small margin) than the last best total distance at every [char_checkpoint] number of "
+             "characters. Ignored if the loaded config has return_to_home flag set True."
     )
     parser.add_argument(
         "-name",
@@ -450,8 +453,8 @@ def main(args):
         "-mutation_rate",
         metavar="RATE",
         type=float,
-        default=0.5,
-        help="Change the rate at which mutations occur. (Default: 0.5) "
+        default=0.1,
+        help="Change the rate at which mutations occur. (Default: 0.1) "
     )
     parser.add_argument(
         "-epsilon",
