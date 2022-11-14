@@ -1,1 +1,157 @@
-TODO
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>KBMSTR</title>
+        <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- JS -->
+        <script src="js/main.js" type="module"></script>
+        <script src="https://kit.fontawesome.com/a6af146403.js" crossorigin="anonymous"></script>
+        <!-- Favicon -->
+        <link rel="icon" type="image/x-icon" href="img/favicon.png">
+    </head>
+    <body>
+        <main>
+            <div class="hamburger">
+                <div class="hamburger-item content-landing-bg">
+                    <div class="hamburger-content content-landing" active>
+                        <div class="hamburger-tag">
+                            <i class="fa-solid fa-house"></i> Home
+                        </div>
+                        <img class="landing-logo" src="img/KBMSTR_logo.png">
+                        <div class="landing-title">
+                            <h1 id="landing-title">KBMSTR - Keyboard Master</h1>
+                        </div>
+                        <div class="landing-subtitle">
+                            <h2 id="landing-subtitle">Personalized Keyboard Layouts</h2>    
+                        </div>
+                    </div>
+                </div>
+                <div>
+                <div class="hamburger-item content-config-bg">
+                    <div class="hamburger-content content-config">
+                        <div class="keyboard-wrapper">
+                            <div class="keyboard" id="keyboard-configure"></div>
+                        </div>
+                        <div class="config-tools-description">
+                            Map Fingers to Key
+                        </div>
+
+                        <div class="config-mapping-wrapper">
+                            <div class = "config-mapping finger tooltip l_p" finger="l_p">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Left Pinky</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip l_r" finger="l_r">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Left Ring</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip l_m" finger="l_m">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Left Middle</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip l_i" finger="l_i">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Left Index</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip r_i" finger="r_i">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Right Index</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip r_m" finger="r_m">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Right Middle</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip r_r" finger="r_r">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Right Ring</span>
+                            </div>
+                            <div class = "config-mapping finger tooltip r_p" finger="r_p">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <span class="tooltiptext top">Right Pinky</span>
+                            </div>
+                        </div>
+                        <div class="config-tools-description">
+                            Set Home Key
+                        </div>
+                        <div class="config-mapping-wrapper">
+                            <div class = "config-mapping home tooltip l_p" finger="l_p"> 
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Left Pinky</span>
+                            </div>
+                            <div class = "config-mapping home tooltip l_r" finger="l_r">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Left Ring</span>
+                            </div>
+                            <div class = "config-mapping home tooltip l_m" finger="l_m">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Left Middle</span>
+                            </div>
+                            <div class = "config-mapping home tooltip l_i" finger="l_i">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Left Index</span>
+                            </div>
+                            <div class = "config-mapping home tooltip r_i" finger="r_i">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Right Index</span>
+                            </div>
+                            <div class = "config-mapping home tooltip r_m" finger="r_m">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Right Middle</span>
+                            </div>
+                            <div class = "config-mapping home tooltip r_r" finger="r_r">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Right Ring</span>
+                            </div>
+                            <div class = "config-mapping home tooltip r_p" finger="r_p">
+                                <i class="fa-solid fa-house"></i>
+                                <span class="tooltiptext bottom">Right Pinky</span>
+                            </div>
+                        </div>
+                        <div class="config-tools">
+                            <div class="config-tools-item">
+                                <div class="config-tools-option">
+                                    <div class="config-tools-description">
+                                        After pressing a key, my fingers:
+                                        <select id="return-preferance">
+                                            <option value="true">Return Home</option>
+                                            <option value="false">Stay on Key</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="config-tools-item">
+                                    <button id="create-config-submit" class="config-tools-create">Create Configuration!</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hamburger-tag">
+                            <i class="fa-solid fa-wrench"></i> Configure
+                        </div>
+                    </div>
+                </div>
+                <div class="hamburger-item content-generate-bg">
+                    <div class="hamburger-content content-generate">
+                        <div class="hamburger-tag">
+                            <i class="fa-solid fa-hammer"></i>Generate
+                        </div>
+                    </div>
+                </div>
+                <div class="hamburger-item content-practice-bg">
+                    <div class="hamburger-content content-practice">
+                        <div class="hamburger-tag">
+                            <i class="fa-solid fa-graduation-cap"></i> Practice
+                        </div>
+                    </div>
+                </div>
+                <div class="hamburger-item content-misc-bg">
+                    <div class="hamburger-content content-misc">
+                        <div class="hamburger-tag">
+                            <i class="fa-solid fa-ghost"></i> Misc
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
