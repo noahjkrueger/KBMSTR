@@ -7,6 +7,10 @@
     --active-height: 0vh;
 }
 
+body {
+    height: 100vh;
+    overflow: hidden;
+}
 .config-mapping-wrapper {
     width: 25vw;
     height: 2vw;
@@ -28,18 +32,21 @@
 }
 
 .config-tools-create {
-  background-color: #f8f8f8;
-  color: #000;
-  border-radius: 5%;
-  cursor: pointer;
-  font-size: 1vw;
-  padding: 0.25vw 0.5vw;
-  text-align: center;
+    background-color: #f8f8f8;
+    border: 0.25vw solid #000;
+    border-radius: 1em;
+    color: #000;
+    cursor: pointer;
+    font-size: 1vw;
+    font-size: 1.5vw;
+    font-weight: 600;
+    padding: 0.5vw 0.5vw;
+    text-align: center;
 }
 
 .config-tools-create:hover {
     color: #f8f8f8;
-    background-color: #E07A5F;
+    background-color: #1B1B1E;
 }
 
 .config-tools-description {
@@ -49,33 +56,33 @@
 }
 
 .config-tools-item {
-    
+    /* something fancy */
 }
 
 .config-tools-option {
     padding-top: 1vh;
-    margin-bottom: 2vh;
-    
+    margin-bottom: 2vh;    
 }
 
 .config-tools-option option {
     color: #f8f8f8;
-    background-color: #373F51;
+    background-color: #1B1B1E;
 }
 
 .config-tools-option select {
     background-color: #f8f8f8;
     color: #000;
-    border-radius: 5%;
     cursor: pointer;
     font-size: 1vw;
-    padding: 0.25vw 0.5vw;
+    padding: 0.25vw 0.25vw;
     text-align: center;
+    border-radius: 1em;
+    border: 0.25vw solid #000;
   }
   
 .config-tools-option select:hover {
     color: #f8f8f8;
-    background-color: #E07A5F;
+    background-color: #1B1B1E;
 }
 
 .content-config {
@@ -118,6 +125,7 @@
     background-color: #88A096;
 }
 
+
 .finger {
     border-radius: 25%;
 }
@@ -129,8 +137,8 @@
 
 .finger:hover {
     cursor: pointer;
-    border-color: #ffffff;
-    color: #fff;
+    border-color: #f8f8f8;
+    color: #f8f8f8;
 }
 
 .hamburger {
@@ -153,13 +161,15 @@
     color: #f8f8f8;
     text-align: left;
     padding-left: 1.5vw;
-    padding-bottom: 0.25vw;
-    font-size: 1vw;
+    font-size: 0.75vw;
     font-weight: 600;
     width: 100vw;
+    padding-top: 1vh;
+    padding-bottom: 0.5vh;
     position: absolute;
     bottom: 0;
     background-color: inherit;
+    animation: slide-text 1s 1;
 }
 
 .hamburger-tag:hover {
@@ -168,7 +178,7 @@
 
 .hamburger-tag i {
     padding-right: 0.25vw;
-    font-size: 1vw;
+    font-size: 0.75vw;
 }
 
 .hamburger-item {
@@ -190,13 +200,13 @@
 
 .home:hover {
     cursor: pointer;
-    border-color: #fff;
-    color: #fff;
+    border-color: #f8f8f8;
+    color: #f8f8f8;
 }
 
 .key {
     line-height: 2.8em;
-    background: #ffffff;
+    background: #f8f8f8;
 }
 
 .key_double > * {
@@ -212,7 +222,11 @@
     padding: 1%;
     width: 80vw;
     margin: auto;
-    margin-bottom: 1vh;
+    margin-bottom: 2vh;
+}
+
+#keyboard-practice {
+    width: 70vw;
 }
 
 .keyboard-wrapper {
@@ -261,7 +275,7 @@
 .keyrow > div[caps-on],
 .keyrow > div:active {
     background: #000000;
-    color: #FFFFFF;
+    color: #f8f8f8;
     position: relative;
     top: 0.2em;
     box-shadow: none;
@@ -270,7 +284,7 @@
 .keyrow > div[data-pressed],
 .keyrow > div:active {
     background: #000000;
-    color: #FFFFFF;
+    color: #f8f8f8;
     position: relative;
     top: 0.2em;
     box-shadow: none;
@@ -300,9 +314,36 @@
     animation-delay: 1s;
 }
 
+.landing-nav {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+    width: 50vw;
+    text-align: center;
+    margin: auto;
+    display: flex;
+    opacity: 0;
+    animation: fade-in 1s 1s 1 forwards;
+}
+
+.landing-nav-item {
+    padding: 1vh;
+    flex: 1;
+    height: inherit;
+    font-size: 0.75vw;
+    font-weight: 600;
+    color: #a5a5a5;
+}
+
+.landing-nav-item:hover {
+    cursor: pointer;
+    color: #f8f8f8;
+    animation: pulse-text 3s infinite;
+}
+
 .landing-title {
     line-height: 10vh;
-    color: #ffffff;
+    color: #f8f8f8;
     font-size: 2vw;
 }
 
@@ -312,19 +353,19 @@
 }
 
 .l_p {
-    background: #ff5151;
+    background: #5778a4;
 }
 
 .l_r {
-    background: #ff9f5a;
+    background: #e49444;
 }
 
 .l_m {
-    background: #40b533;
+    background: #d1615d;
 }
 
 .l_i {
-    background: #3aceff;
+    background: #85b6b2;
 }
 
 .mapping-instructions {
@@ -341,20 +382,145 @@
     font-weight: bold;
 }
 
+.practice-exercise-correct {
+    color: #008000;
+    display: inline;
+    padding-left: 1vw;
+    white-space: pre;
+}
+
+.practice-exercise-cursor {
+    animation: blink 1s infinite;
+}
+
+.practice-exercise-incorrect {
+    color: #ff0000;
+    display: inline;
+    background-color: pink;
+    white-space: pre;
+}
+
+.practice-exercise-typing {
+    width: 50vw;
+    height: 3vh;
+    border-radius: 1em;
+    margin: auto;
+    display: flex;
+    background-color: #f8f8f8;
+    text-align: center;
+    overflow: hidden;
+    font-size: 1.5vw;
+    padding: 1vh;
+}
+
+.practice-exercise-upcoming {
+    color: #5f5f5f;
+    display: inline;
+    white-space: pre;
+}
+
+.practice-tools {
+    padding-top: 1vw;
+    width: 65vw;
+    border-radius: 1em;
+    background-color: #f8f8f8;
+    margin: auto;
+}
+
+.practice-tools-row {
+    display: inline;
+}
+
+.practice-tools-description {
+    font-size: 1.25vw;
+    font-weight: 600;
+    padding-right: 1vw;
+    padding-left: 1vw;
+}
+
+.practice-tools-load {
+    background-color: #f8f8f8;
+    border: 0.25vw solid #000;
+    border-radius: 1em;
+    color: #000;
+    cursor: pointer;
+    font-size: 1vw;
+    font-weight: 600;
+    padding: 0.25vw 0.25vw;
+    text-align: center;
+}
+
+.practice-tools-load:hover {
+    color: #f8f8f8;
+    background-color: #1B1B1E;
+}
+
+.practice-tools-option option {
+    color: #f8f8f8;
+    background-color: #1B1B1E;
+}
+
+.practice-tools-option select {
+    background-color: #f8f8f8;
+    color: #000;
+    cursor: pointer;
+    font-size: 1vw;
+    padding: 0.25vw 0.25vw;
+    text-align: center;
+    border-radius: 1em;
+    border: 0.25vw solid #000;
+}
+
+.practice-tools-option select:hover {
+    color: #f8f8f8;
+    background-color: #1B1B1E;
+}
+
+.practice-tools-row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin: auto;
+    padding-bottom: 1vw;
+}
+
+.practice-tools-upload {
+    color: #f8f8f8;
+    background-color: #1B1B1E;
+    border-radius: 1em;
+}
+
+.practice-tools-upload::file-selector-button {
+    background-color: #f8f8f8;
+    border: 0.25vw solid #000;
+    border-radius: 1em;
+    color: #000;
+    cursor: pointer;
+    font-size: 0.75vw;
+    font-weight: 600;
+    padding: 0.25vw 0.25vw;
+    text-align: center;
+}
+
+.practice-tools-upload::file-selector-button:hover {
+    color: #f8f8f8;
+    background-color: #E07A5F;
+}
+
 .r_i {
-    background: #c294ff;
+    background: #6a9f58;
 }
 
 .r_m {
-    background: #afebff;
+    background: #e7ca60;
 }
 
 .r_r {
-    background: #fff86b;
+    background: #a87c9f;
 }
 
 .r_p { 
-    background: #7dff9b;
+    background: #f1a2a9;
 }
 
 .tooltip .bottom {
@@ -378,7 +544,7 @@
     width: 5.5vw;
     visibility: hidden;
     background-color: #000;
-    color: #FFF;
+    color: #f8f8f8;
     text-align: center;
     padding: 1vh;
     border-radius: 6px;
@@ -415,8 +581,8 @@ div[inactive] {
 }
 
 div[selected-finger] {
-    border-color: #ffffff;
-    color: #ffffff;
+    border-color: #f8f8f8;
+    color: #f8f8f8;
 }
 
 @keyframes become-active {
@@ -437,11 +603,47 @@ div[selected-finger] {
     }
 }
 
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    49% {
+        opacity: 0;
+    }
+    51% {
+        opacity: 100;
+    }
+    100% {
+        opacity: 100;
+    }
+}
+
 @keyframes fade-in {
     from {
         opacity: 0;
     }
     to {
         opacity: 100;
+    }
+}
+
+@keyframes pulse-text {
+    0% {
+        font-size: 0.75vw;
+    }
+    50% {
+        font-size: 0.7vw;
+    }
+    100% {
+        font-size: 0.75vw;
+    }
+}
+
+@keyframes slide-text {
+    from {
+        padding-left: 75vw;
+    }
+    to {
+        padding-left: 1.5vw;
     }
 }

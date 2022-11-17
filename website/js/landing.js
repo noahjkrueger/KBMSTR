@@ -42,10 +42,17 @@ export async function initSite() {
             animation_in_motion = false;
         });
     }
+    const nav = document.querySelectorAll("div[navigation]");
+    for (let item of nav) {
+        item.addEventListener("click", (e) => {
+            document.getElementById(item.getAttribute("navigation")).click();
+        });
+    }
     document.getElementById('landing-title').style.opacity = "0%";
     document.getElementById('landing-subtitle').style.opacity = "0%";
     await delay(1600);
     type('landing-title');
     await delay(2500);
     type('landing-subtitle');
+
 }

@@ -1,6 +1,4 @@
-const original_layout = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./";
-
-export function generate_kb(element, onclick, og_layout, kb_layout, alt_kb_layout, finger_res) {
+export function generate_kb(element, onclick, sp_att, og_layout, kb_layout, alt_kb_layout, finger_res) {
     let keyboard_div = document.getElementById(element);
     
     let keyrow_1 = document.createElement("div");
@@ -28,6 +26,9 @@ export function generate_kb(element, onclick, og_layout, kb_layout, alt_kb_layou
             let alt = alt_kb_layout.substring(count, count+1);
             let keyy = document.createElement("div");
             keyy.addEventListener("click", onclick);
+            if (sp_att) {
+                keyy.toggleAttribute(sp_att);
+            }
             if (og ==='\\') {
                 keyy.setAttribute("key_map", '|');
             }
@@ -36,14 +37,13 @@ export function generate_kb(element, onclick, og_layout, kb_layout, alt_kb_layou
             }
             let char1 = document.createElement("div");
             char1.innerText = cc.toUpperCase();
+            keyy.setAttribute("key_char", cc+alt);
             if (alt.toUpperCase() === cc.toUpperCase()) {
                 keyy.classList.add("key");
-                keyy.setAttribute("key_char", cc);
             }
             else {
                 let char2 = document.createElement("div");
                 keyy.classList.add("key_double");
-                keyy.setAttribute("key_char", cc+alt);
                 char2.innerText = alt; 
                 keyy.appendChild(char2);
             }
@@ -56,6 +56,9 @@ export function generate_kb(element, onclick, og_layout, kb_layout, alt_kb_layou
 
     function create_named_key(name, size, row) {
         let k = document.createElement('div');
+        if (sp_att) {
+            k.toggleAttribute(sp_att);
+        }
         k.innerText = name;
         k.classList.add("key");
         k.classList.add(size);
@@ -78,49 +81,6 @@ export function generate_kb(element, onclick, og_layout, kb_layout, alt_kb_layou
     size();
 }
 
-// function getKey (e) {
-//     var event_key = e.key;
-//     var key_inputted = null;
-//     if (event_key === '\\') {
-//         return document.querySelectorAll('[key_map="|"]');
-//     }
-//     else {
-//         key_inputted =  document.querySelector('[key_map*="' + event_key + '"]');
-//         if (!key_inputted) {
-//             var k = document.querySelectorAll('[key_name="' + event_key + '"]');
-//             if (!k){
-//                 return null;
-//             }
-//             else {
-//                 return k
-//             }
-//         }
-//     }
-//     return [key_inputted]
-// }
-
-// document.body.addEventListener('keydown', function (e) {
-//     var key = getKey(e);
-//     if (!key) {
-//         return console.warn('No key for', e.keyCode);
-//     }
-//     for (let k of key){
-//         k.setAttribute('data-pressed', 'on');
-//     }
-// });
-
-// document.body.addEventListener('keyup', function (e) {
-//     var key = getKey(e);
-//     if (key) {
-//         for (let k of key){
-//             k.removeAttribute('data-pressed');
-//             if (k.getAttribute("key_name") === "CapsLock") {
-//                 k.toggleAttribute("caps-on");
-//             }
-//         }
-//     }
-// });
-
 function size () {
     var size = keyboard.parentNode.clientWidth / 71;
     keyboard.style.fontSize = size + 'px';
@@ -128,5 +88,5 @@ function size () {
 
 var keyboard = document.querySelector('.keyboard');
 window.addEventListener('resize', function (e) {
-    
+    size();
 });

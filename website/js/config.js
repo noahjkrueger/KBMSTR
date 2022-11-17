@@ -1,4 +1,3 @@
-import * as api from './api.js';
 import { generate_kb } from './keyboard.js';
 
 function code_key(e) {
@@ -30,7 +29,7 @@ function code_key(e) {
 
 export function initConfig() {
     const empty = "                                               ";
-    generate_kb("keyboard-configure", code_key, empty, empty, empty, []);
+    generate_kb("keyboard-configure", code_key, null, empty, empty, empty, []);
     const config_fingers = document.getElementsByClassName("config-mapping");
     for (let c_fing of config_fingers) {
         c_fing.addEventListener("click", e => {
@@ -107,7 +106,7 @@ export function initConfig() {
         };
         let x = 0;
         for (let ky of keys) {
-            if (!ky.classList.contains("keyword")) {
+            if (!ky.hasAttribute('practice-key') && !ky.classList.contains("keyword")) {
                 if (!ky.hasAttribute("finger_res")) {
                     alert("Error: All keys must be mapped!");
                     return;
