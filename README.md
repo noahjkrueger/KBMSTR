@@ -1,7 +1,7 @@
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="64"> KBMSTR - Personalized Keyboards
 
 # <img src="docs/images/book.png" alt="Book Icon" height="32"> Table of Contents
-- **[Visit the Official Website!](href)**
+- **[Visit the Official Website!](www.kbmstr.com)**
 - **[Introduction](#introduction)**
 - **[Installation](#installation)**
 - **[Creating a Keyboard](#creating-a-keyboard)**
@@ -19,10 +19,10 @@ a keyboard layout to their exact needs. The goal of a generating a layout is to 
 using a keyboard to type. The beauty of this tool is that it considers various methods of typing and furthermore
 will prove useful to anyone looking to improve their typing efficiency. The development process of a brand new keyboard
 layout, personalized to an individual, is involved, yet simple. KBMSTR works with the user to collect actual keystrokes
-from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](link-to-website).
-Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](link-to-website) to let the algorithm know
+from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](www.kbmstr.com).
+Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](www.kbmstr.com) to let the algorithm know
 actual typing habits, KBMSTR will then utilize these two items to employ a genetic algorithm to find the absolute best keyboard layout
-for you. This, paired with [KBMSTR's practice tool](link-to-website) allow for users to dramaGtically speed up their typing speeds
+for you. This, paired with [KBMSTR's practice tool](www.kbmstr.com) allow for users to dramaGtically speed up their typing speeds
 and reduce hand fatigue while using the computer.
 
 # <img src="docs/images/download.png" alt="Download Icon" height="32" id="installation"> Installation
@@ -104,7 +104,7 @@ Again, the program is able to read multiple zip archives that may contain other 
 A configuration file is required to generate keyboards. This file defines which fingers a person uses to type which keys, 
 the distances between those keys, alternate key symbols, and whether or not the user returns their fingers to the home row after each keystroke.
 
-### Using [KBMSTR Online Tool](link-to-site)
+### Using [KBMSTR Online Tool](www.kbmstr.com)
 By utilizing this tool, creating a config is very easy! Just select the keys that each finger is responsible for and indicate if
 you prefer to return the fingers back to the home keys or not! All of this is done with a intuitive interface; the configuration file
 is generated for you! This is the recommended method.
@@ -141,7 +141,7 @@ of alternative keys for a better layout - something we hope to do in the future.
 
 #### finger_duty
 This data structure is an array that represents which finger is responsible or which key. The index of each value is the
-key the value is responsible for. For this to integrate with the [display](#display) argument and the [KBMSTR webapp](link-to-site), 
+key the value is responsible for. For this to integrate with the [display](#display) argument and the [KBMSTR webapp](www.kbmstr.com), 
 there must be a value for each index that is one of the following:
 - "l_p": the left pinky finger is responsible.
 - "l_r": the left ring finger is responsible.
@@ -310,7 +310,7 @@ as defined in keyboard and config.
   - Return: The best keyboard layput for using the Standard method of typing with returning fingers to home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
-By visiting [The Official KBMSTR Website](link-to-site), a user will be able to practice their typing both on the keyboard
+By visiting [The Official KBMSTR Website](www.kbmstr.com), a user will be able to practice their typing both on the keyboard
 layouts previously mentioned as well as their own personalized keyboards. Users are presented with the option to upload their
 own personalized keyboard and configuration to the website (produced by our other tools!) that will then display a virtual keyboard.
 It is here where a user is able to use their physical keyboard to practice their new keyboard, or just try out their results.
