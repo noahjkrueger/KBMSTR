@@ -5,6 +5,7 @@
 
 :root {
     --active-height: 0vh;
+    --practice-offset: 50%;
 }
 
 body {
@@ -395,12 +396,13 @@ body {
 .practice-exercise-correct {
     color: #008000;
     display: inline;
-    padding-left: 1vw;
     white-space: pre;
+    margin-left: var(--practice-offset);
 }
 
 .practice-exercise-cursor {
     animation: blink 1s infinite;
+
 }
 
 .practice-exercise-incorrect {
@@ -416,7 +418,7 @@ body {
     border-radius: 1em;
     color: #000;
     cursor: pointer;
-    font-size: 1vw;
+    font-size: 100%;
     font-weight: 600;
     padding: 0.25vw 0.25vw;
     text-align: center;
@@ -446,15 +448,16 @@ body {
 .practice-exercise-typing {
     width: 50vw;
     height: 3vh;
+    word-wrap: break-word;
     border-radius: 1em;
     margin: auto;
     margin-bottom: 1vh;
     display: flex;
     background-color: #f8f8f8;
-    text-align: center;
-    overflow: hidden;
-    font-size: 1.5vw;
+    font-size: 200%;
     padding: 1vh;
+    overflow: hidden;
+    font-family: monospace;
 }
 
 .practice-exercise-upcoming {
