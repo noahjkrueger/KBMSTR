@@ -97,16 +97,36 @@ async function reload(type) {
     if (!config) {
         config = await fetch(preset_paths[1]).then((response) => response.json()).then((json) => {return json;});
     }
-    var alt_string = "";
-    for (let c of layout.layout) {
-        for (let [k, v] of Object.entries(config.alt_keys)) {
-            if (v === c) {
-                alt_string += String(k);
-                break;
+    try { 
+        var alt_string = "";
+        for (let c of layout.layout) {
+            for (let [k, v] of Object.entries(config.alt_keys)) {
+                if (v === c) {
+                    alt_string += String(k);
+                    break;
+                }
             }
         }
+        generate_kb("keyboard-practice", null, "practice-key", physical_layout, layout.layout, alt_string, config.finger_duty);
     }
-    generate_kb("keyboard-practice", null, "practice-key", physical_layout, layout.layout, alt_string, config.finger_duty);
+    catch (error) {
+        try {
+            var alt_string = "";
+            for (let c of config.layout) {
+                for (let [k, v] of Object.entries(layout.alt_keys)) {
+                    if (v === c) {
+                        alt_string += String(k);
+                        break;
+                    }
+                }
+            }
+            generate_kb("keyboard-practice", null, "practice-key", physical_layout, config.layout, alt_string, layout.finger_duty);
+        }
+        catch (e) {
+            alert("Error loading custom files - malformed or missing. Loading Preset.");
+            await reload("preset");
+        }
+    }
 }
 
 async function parseJsonFile(file) {
@@ -184,7 +204,7 @@ function typeinBox(key, practice_data, typed) {
     if (input === 'Backspace') {
         if (typed.length > 0) {
             typed = typed.substring(0, typed.length - 1);
-            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 2.2) + "%";
+            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 1.4) + "%";
         }
         else {
             new_off = cur_off
@@ -192,7 +212,7 @@ function typeinBox(key, practice_data, typed) {
     }
     else {
         typed += input;
-        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 2.2) + "%";
+        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 1.4) + "%";
     }
     document.documentElement.style.setProperty("--practice-offset", new_off);
     var cor = "";
