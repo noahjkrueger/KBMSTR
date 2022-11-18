@@ -2,9 +2,13 @@ import { generate_kb } from "./keyboard.js";
 
 var praccy = "";
 var current_inputted_text = "";
+var stated_typing = null;
 
 export async function initPractice() {
     await reload();
+    document.getElementById("new-exercise").addEventListener("click", async () => {
+        await newExercise();
+    });
     document.getElementById("load-preset").addEventListener("click", async () => {
         await reload("preset");
     });
@@ -35,16 +39,25 @@ export async function initPractice() {
     });
 }
 
+async function newExercise() {
+    var practice_data = null;
+    await fetch('./data/practice/practice.json').then(response => response.json()).then(data => {practice_data = data;}).catch((error) => {console.error('Error:', error);});
+    praccy = practice_data[String(Math.floor(Math.random() * Object.keys(practice_data).length))];
+    current_inputted_text = "";
+    stated_typing = null;
+    document.getElementById("wpm").innerText = "WPM: 0.00"
+    document.getElementById("practice-exercise-correct").innerText = "";
+    document.getElementById("practice-exercise-incorrect").innerText = "";
+    document.getElementById("practice-exercise-upcoming").innerText = praccy;
+}
+
 async function reload(type) {
     const element = document.getElementById("keyboard-practice");
     const physical_layout = document.getElementById('physical-keyboard').value;
     const up_layout = document.getElementById('layout-file');
     const up_config = document.getElementById('config-file');
 
-    var practice_data = null;
-    await fetch('./data/practice/practice.json').then(response => response.json()).then(data => {practice_data = data;}).catch((error) => {console.error('Error:', error);});
-    praccy = practice_data[String(Math.floor(Math.random() * Object.keys(practice_data).length))];
-    current_inputted_text = "";
+    await newExercise();
 
     document.getElementById("practice-exercise-correct").innerText = "";
     document.getElementById("practice-exercise-incorrect").innerText = "";
@@ -128,9 +141,20 @@ function getKey (e) {
     return [key_inputted]
 }
 
+function getTime() {
+    var tm = new Date();
+    return 1000 * ((60 * ((60 * tm.getHours())+ tm.getMinutes()))+ tm.getSeconds()) + tm.getMilliseconds();
+}
+
 function typeinBox(key, practice_data, typed) {
     if (!typed) {
         typed = "";
+    }
+    if (!stated_typing) {
+        stated_typing = getTime();
+    }
+    if (typed === practice_data) {
+        return typed;
     }
     const shift = document.querySelector("[data-pressed][practice-key][key_name='Shift']");
     const caps = document.querySelector('[caps-on][practice-key]');
@@ -140,22 +164,20 @@ function typeinBox(key, practice_data, typed) {
             input = key.getAttribute("key_name");
         }
         else {
-            return;
+            return typed;
         }
     }
-    else if (shift && caps) {
-        input = key.getAttribute('key_char')[0];
-    }
-    else if (shift || caps) {
-        input = key.getAttribute('key_char')[1];
-    }
     else {
-        input = key.getAttribute('key_char')[0];
+        if (shift && caps) {
+            input = key.getAttribute('key_char')[0];
+        }
+        else if (shift || caps) {
+            input = key.getAttribute('key_char')[1];
+        }
+        else {
+            input = key.getAttribute('key_char')[0];
+        }
     }
-    const correct = document.getElementById("practice-exercise-correct");
-    const incorrect = document.getElementById("practice-exercise-incorrect");
-    const upcoming = document.getElementById("practice-exercise-upcoming");
-
     if (input === 'Backspace') {
         typed = typed.substring(0, typed.length - 1);
     }
@@ -173,8 +195,12 @@ function typeinBox(key, practice_data, typed) {
         }
         x += 1;
     }
+    const correct = document.getElementById("practice-exercise-correct");
+    const incorrect = document.getElementById("practice-exercise-incorrect");
+    const upcoming = document.getElementById("practice-exercise-upcoming");
     upcoming.innerText = practice_data.substring(typed.length, practice_data.length);
     correct.innerText = cor;
-    incorrect.innerText = typed.substring(x, typed.length)
+    incorrect.innerText = typed.substring(x, typed.length);
+    document.getElementById("wpm").innerText = "WPM: " + String((typed.length / (5.0 * ((getTime() - stated_typing) / 60000))).toFixed(2));
     return typed;
 }

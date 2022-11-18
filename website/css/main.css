@@ -16,6 +16,7 @@ body {
     height: 2vw;
     margin: auto;
     display: flex;
+    margin-bottom: 2vh;
 }
 
 .config-mapping {
@@ -51,7 +52,6 @@ body {
 
 .config-tools-description {
     font-size: 1.25vw;
-    margin-top: 2vh;
     color: #f8f8f8;
 }
 
@@ -125,6 +125,11 @@ body {
     background-color: #88A096;
 }
 
+.custom {
+    width: fit-content;
+    border-radius: 1em;
+}
+
 .finger {
     border-radius: 25%;
 }
@@ -142,7 +147,7 @@ body {
 
 .hamburger {
     height: 100vh;
-    background-color: #000000;
+    background-color: #000;
 }
 
 .hamburger-content {
@@ -219,7 +224,7 @@ body {
     background-color: #f8f8f8;
     border-radius: 1em;
     padding: 1%;
-    width: 80vw;
+    width: 70vw;
     margin: auto;
     margin-bottom: 2vh;
 }
@@ -230,6 +235,7 @@ body {
 
 .keyboard-wrapper {
     margin-top: 4vh;
+    margin-bottom: 2vh;
 }
 
 .keyboard > .keyrow {
@@ -381,6 +387,11 @@ body {
     font-weight: bold;
 }
 
+.physical {
+    border-top-left-radius: 1em;
+    display: inline;
+}
+
 .practice-exercise-correct {
     color: #008000;
     display: inline;
@@ -399,11 +410,45 @@ body {
     white-space: pre;
 }
 
+.practice-exercise-new {
+    background-color: #f8f8f8;
+    border: 0.25vw solid #000;
+    border-radius: 1em;
+    color: #000;
+    cursor: pointer;
+    font-size: 1vw;
+    font-weight: 600;
+    padding: 0.25vw 0.25vw;
+    text-align: center;
+    display: inline-block;
+}
+
+.practice-exercise-stats {
+    margin: auto;
+    margin-top: 2vh;
+    margin-bottom: 1vh;
+    position: relative;
+    right: 0vw;
+}
+
+.practice-exercise-stats * {
+    display: inline-block;
+}
+
+.practice-exercise-stats-wpm {
+    background-color: #f8f8f8;
+    padding: 0.5vh;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    border-radius: 1em;
+}
+
 .practice-exercise-typing {
     width: 50vw;
     height: 3vh;
     border-radius: 1em;
     margin: auto;
+    margin-bottom: 1vh;
     display: flex;
     background-color: #f8f8f8;
     text-align: center;
@@ -420,21 +465,19 @@ body {
 
 .practice-tools {
     padding-top: 1vw;
-    width: 65vw;
+    width: 75vw;
     border-radius: 1em;
     background-color: #f8f8f8;
     margin: auto;
 }
 
-.practice-tools-row {
-    display: inline;
-}
 
 .practice-tools-description {
     font-size: 1.25vw;
     font-weight: 600;
-    padding-right: 1vw;
-    padding-left: 1vw;
+    padding: 2vh;
+    margin: auto;
+    color: #f8f8f8;
 }
 
 .practice-tools-load {
@@ -506,6 +549,11 @@ body {
     background-color: #E07A5F;
 }
 
+.preset {
+    display: inline;
+    border-top-right-radius: 1em;
+}
+
 .r_i {
     background: #c294ff;
 }
@@ -568,7 +616,6 @@ body {
 }
 
 div[active] {
-
     animation: become-active 1s;
     animation-fill-mode: forwards;
 

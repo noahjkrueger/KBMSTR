@@ -80,13 +80,13 @@ export function generate_kb(element, onclick, sp_att, og_layout, kb_layout, alt_
     create_named_key(" ", "kw4", keyrow_5);
     size();
 }
-
 function size () {
-    var size = keyboard.parentNode.clientWidth / 71;
-    keyboard.style.fontSize = size + 'px';
+    for (let kb of document.querySelectorAll('.keyboard')) {
+        var size = kb.parentNode.clientWidth / 79;
+        kb.style.fontSize = size + 'px';
+    }
 } 
 
-var keyboard = document.querySelector('.keyboard');
 window.addEventListener('resize', function (e) {
     size();
 });

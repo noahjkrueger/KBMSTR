@@ -159,7 +159,10 @@
                     <div class="hamburger-content content-practice">
                         <div class="practice-exercise-wrapper">
                             <div class="practice-exercise-stats">
-                                stats
+                                <button class="practice-exercise-new" id="new-exercise" onkeyup="event.preventDefault()"><i class="fa-solid fa-face-laugh"></i> Try Another!</button>
+                                <div class="practice-exercise-stats-wpm" id="wpm">
+                                    WPM: 0.00
+                                </div>
                             </div>
                             <div class="practice-exercise-typing">
                                 <p class="practice-exercise-correct" id="practice-exercise-correct">
@@ -176,41 +179,33 @@
                         <div class="keyboard-wrapper" id="keyboard-practice-wrapper">
                             <div class="keyboard" id="keyboard-practice"></div>
                         </div>
-                        <div class="practice-tools">
-                            <div class="practice-tools-row practice-tools-option">
-                                <div class="practice-tools-description">
-                                    Select Physical Keyboard:
-                                </div>
-                                <select id="physical-keyboard">
-                                    <option value="`1234567890-=qwertyuiop[]\asdfghjkl;'zxcvbnm,./">QWERTY</option>
-                                    <option value="`1234567890-=qwertzuiop[]\asdfghjkl;'yxcvbnm,./">QWERTZ</option>
-                                    <option value="`1234567890-=azertyuiop[]\qsdfghjklm'wxcvbn;,./">AZERTY</option>
-                                </select>
-                            </div>
-                            <div class="practice-tools-row practice-tools-option"">
-                                <div class="practice-tools-description">
-                                    Select Preset:
-                                </div>
-                                <select id="preset-keyboard">
-                                    <option value="./data/keyboards/qwerty.json ./data/config/standard.json">QWERTY - Standard</option>
-                                    <option value="./data/keyboards/qwerty.json ./data/config/huntpeck.json">QWERTY - HuntPeck</option>
-                                    <option value="./data/keyboards/dvorak.json ./data/config/standard.json">DVORAK - Standard</option>
-                                    <option value="./data/keyboards/dvorak.json ./data/config/huntpeck.json">DVORAK - HuntPeck</option>
-                                    <option value="./data/keyboards/standard.KBMSTR.remain.json ./data/config/standard.json">KBMSTR - Standard - Remain</option>
-                                    <option value="./data/keyboards/huntpeck.KBMSTR.remain.json ./data/config/huntpeck.json">KBMSTR - HuntPeck - Remain</option>
-                                    <option value="./data/keyboards/standard.KBMSTR.return.json ./data/config/standard.json">KBMSTR - Standard - Return</option>
-                                    <option value="./data/keyboards/huntpeck.KBMSTR.return.json ./data/config/huntpeck.json">KBMSTR - HuntPeck - Return</option>
-                                </select>
-                                <button class="practice-tools-load" id="load-preset" onkeyup="event.preventDefault()"><i class="fa-solid fa-wrench"></i> Load Preset</button>
-                            </div>
-                            <div class="practice-tools-row">
-                                <div class="practice-tools-description">
-                                    Or Upload Your Own:
-                                </div>
-                                <input id="layout-file" type="file" class="practice-tools-upload" onkeyup="event.preventDefault()"/>
-                                <input id="config-file" type="file" class="practice-tools-upload" onkeyup="event.preventDefault()"/>
-                                <button class="practice-tools-load" id="load-custom" onkeyup="event.preventDefault()"><i class="fa-solid fa-wrench"></i> Load Custom Keyboard</button>
-                            </div>
+                        <div class="practice-tools-description physical practice-tools-option">
+                            Select Physical Keyboard:
+                            <select id="physical-keyboard">
+                                <option value="`1234567890-=qwertyuiop[]\asdfghjkl;'zxcvbnm,./">QWERTY</option>
+                                <option value="`1234567890-=qwertzuiop[]\asdfghjkl;'yxcvbnm,./">QWERTZ</option>
+                                <option value="`1234567890-=azertyuiop[]\qsdfghjklm'wxcvbn;,./">AZERTY</option>
+                            </select>
+                        </div>
+                        <div class="practice-tools-description preset practice-tools-option">
+                            Select Preset:
+                            <select id="preset-keyboard">
+                                <option value="./data/keyboards/qwerty.json ./data/config/standard.json">QWERTY - Standard</option>
+                                <option value="./data/keyboards/qwerty.json ./data/config/huntpeck.json">QWERTY - HuntPeck</option>
+                                <option value="./data/keyboards/dvorak.json ./data/config/standard.json">DVORAK - Standard</option>
+                                <option value="./data/keyboards/dvorak.json ./data/config/huntpeck.json">DVORAK - HuntPeck</option>
+                                <option value="./data/keyboards/standard.KBMSTR.remain.json ./data/config/standard.json">KBMSTR - Standard - Remain</option>
+                                <option value="./data/keyboards/huntpeck.KBMSTR.remain.json ./data/config/huntpeck.json">KBMSTR - HuntPeck - Remain</option>
+                                <option value="./data/keyboards/standard.KBMSTR.return.json ./data/config/standard.json">KBMSTR - Standard - Return</option>
+                                <option value="./data/keyboards/huntpeck.KBMSTR.return.json ./data/config/huntpeck.json">KBMSTR - HuntPeck - Return</option>
+                            </select>
+                            <button class="practice-tools-load" id="load-preset" onkeyup="event.preventDefault()"><i class="fa-solid fa-wrench"></i> Load Preset</button>
+                        </div>
+                        <div class="practice-tools-description custom">
+                            Or Upload Your Own:
+                            <input id="layout-file" type="file" class="practice-tools-upload" onkeyup="event.preventDefault()"/>
+                            <input id="config-file" type="file" class="practice-tools-upload" onkeyup="event.preventDefault()"/>
+                            <button class="practice-tools-load" id="load-custom" onkeyup="event.preventDefault()"><i class="fa-solid fa-wrench"></i> Load Custom Keyboard</button>
                         </div>
                         <div class="hamburger-tag" id="practice">
                             <i class="fa-solid fa-brain"></i> Practice
