@@ -1,5 +1,8 @@
 import { generate_kb } from "./keyboard.js";
 
+var praccy = "";
+var current_inputted_text = "";
+
 export async function initPractice() {
     await reload();
     document.getElementById("load-preset").addEventListener("click", async () => {
@@ -8,10 +11,6 @@ export async function initPractice() {
     document.getElementById("load-custom").addEventListener("click", async () => {
         await reload("custom");
     });
-    var practice_data = null;
-    await fetch('./data/practice/practice.json').then(response => response.json()).then(data => {practice_data = data;}).catch((error) => {console.error('Error:', error);});
-    const praccy = practice_data[String(Math.floor(Math.random() * Object.keys(practice_data).length))];
-    var current_inputted_text = "";
     document.getElementsByClassName("practice-exercise-upcoming")[0].innerText = praccy;
     document.body.addEventListener('keydown', function (e) {
         var key = getKey(e);
@@ -38,11 +37,18 @@ export async function initPractice() {
 
 async function reload(type) {
     const element = document.getElementById("keyboard-practice");
-
     const physical_layout = document.getElementById('physical-keyboard').value;
-
     const up_layout = document.getElementById('layout-file');
     const up_config = document.getElementById('config-file');
+
+    var practice_data = null;
+    await fetch('./data/practice/practice.json').then(response => response.json()).then(data => {practice_data = data;}).catch((error) => {console.error('Error:', error);});
+    praccy = practice_data[String(Math.floor(Math.random() * Object.keys(practice_data).length))];
+    current_inputted_text = "";
+
+    document.getElementById("practice-exercise-correct").innerText = "";
+    document.getElementById("practice-exercise-incorrect").innerText = "";
+    document.getElementById("practice-exercise-upcoming").innerText = praccy;
 
     var layout = null;
     var config = null;
@@ -123,6 +129,9 @@ function getKey (e) {
 }
 
 function typeinBox(key, practice_data, typed) {
+    if (!typed) {
+        typed = "";
+    }
     const shift = document.querySelector("[data-pressed][practice-key][key_name='Shift']");
     const caps = document.querySelector('[caps-on][practice-key]');
     var input = null;
@@ -143,7 +152,6 @@ function typeinBox(key, practice_data, typed) {
     else {
         input = key.getAttribute('key_char')[0];
     }
-
     const correct = document.getElementById("practice-exercise-correct");
     const incorrect = document.getElementById("practice-exercise-incorrect");
     const upcoming = document.getElementById("practice-exercise-upcoming");

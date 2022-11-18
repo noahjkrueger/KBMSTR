@@ -136,7 +136,7 @@
                                     </div>
                                 </div>
                                 <div class="config-tools-item">
-                                    <button id="create-config-submit" class="config-tools-create"> <i class="fa-solid fa-wrench"></i> Create Configuration</button>
+                                    <button id="create-config-submit" class="config-tools-create" onkeyup="event.preventDefault()"> <i class="fa-solid fa-wrench"></i> Create Configuration</button>
                                 </div>
                             </div>
                         </div>
@@ -201,15 +201,15 @@
                                     <option value="./data/keyboards/standard.KBMSTR.return.json ./data/config/standard.json">KBMSTR - Standard - Return</option>
                                     <option value="./data/keyboards/huntpeck.KBMSTR.return.json ./data/config/huntpeck.json">KBMSTR - HuntPeck - Return</option>
                                 </select>
-                                <button class="practice-tools-load" id="load-preset"><i class="fa-solid fa-wrench"></i> Load Preset</button>
+                                <button class="practice-tools-load" id="load-preset" onkeyup="event.preventDefault()"><i class="fa-solid fa-wrench"></i> Load Preset</button>
                             </div>
                             <div class="practice-tools-row">
                                 <div class="practice-tools-description">
                                     Or Upload Your Own:
                                 </div>
-                                <input id="layout-file" type="file" class="practice-tools-upload"/>
-                                <input id="config-file" type="file" class="practice-tools-upload"/>
-                                <button class="practice-tools-load" id="load-custom"><i class="fa-solid fa-wrench"></i> Load Custom Keyboard</button>
+                                <input id="layout-file" type="file" class="practice-tools-upload" onkeyup="event.preventDefault()"/>
+                                <input id="config-file" type="file" class="practice-tools-upload" onkeyup="event.preventDefault()"/>
+                                <button class="practice-tools-load" id="load-custom" onkeyup="event.preventDefault()"><i class="fa-solid fa-wrench"></i> Load Custom Keyboard</button>
                             </div>
                         </div>
                         <div class="hamburger-tag" id="practice">

@@ -125,7 +125,6 @@ body {
     background-color: #88A096;
 }
 
-
 .finger {
     border-radius: 25%;
 }
@@ -353,19 +352,19 @@ body {
 }
 
 .l_p {
-    background: #5778a4;
+    background: #ff5151;
 }
 
 .l_r {
-    background: #e49444;
+    background: #ff9f5a;
 }
 
 .l_m {
-    background: #d1615d;
+    background: #40b533;
 }
 
 .l_i {
-    background: #85b6b2;
+    background: #3aceff;
 }
 
 .mapping-instructions {
@@ -508,19 +507,19 @@ body {
 }
 
 .r_i {
-    background: #6a9f58;
+    background: #c294ff;
 }
 
 .r_m {
-    background: #e7ca60;
+    background: #afebff;
 }
 
 .r_r {
-    background: #a87c9f;
+    background: #fff86b;
 }
 
 .r_p { 
-    background: #f1a2a9;
+    background: #7dff9b;
 }
 
 .tooltip .bottom {
