@@ -13,6 +13,7 @@
 
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="32" id="introduction"> Introduction
 
+## Purpose
 KBMSTER provides an array of tools for a user to find the best layout of a keyboard for their own personalized use.
 By utilizing these tools, a user is able to collect data on actual typing habits and in turn use this data to generate
 a keyboard layout to their exact needs. The goal of a generating a layout is to minimize the finger travel distance when
@@ -21,9 +22,28 @@ will prove useful to anyone looking to improve their typing efficiency. The deve
 layout, personalized to an individual, is involved, yet simple. KBMSTR works with the user to collect actual keystrokes
 from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](https://www.kbmstr.com).
 Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](https://www.kbmstr.com) to let the algorithm know
-actual typing habits, KBMSTR will then utilize these two items to employ a genetic algorithm to find the absolute best keyboard layout
+actual typing habits, KBMSTR will then utilize these two items to employ [a unique algorithm](#the-algorithm) to find the absolute best keyboard layout
 for you. This, paired with [KBMSTR's practice tool](https://www.kbmstr.com) allow for users to dramaGtically speed up their typing speeds
 and reduce hand fatigue while using the computer.
+
+## The Algorithm
+The KBMSTR uses a unique algorithm to find the best keyboard layout. This algorithm is best described as a cross
+between a local search and genetic algorithm. It is definitely greedy. The algorithm takes the best known layout (at the beginning, this can be anything)
+and generates (# chars in layout)^2 / 2 succeeding layouts. Each one of these layouts can be achieved by swapping any
+2 keys of the current best layout. The current iteration of the algorithm only knows its adjacent states, hence the 
+local search aspect. If we consider the set of succeeding states as the population of the current generation, then
+we can look for the best aspects in the generation and use them to make a new generation - hence the genetic aspect. This is done by
+first looking at each one of the succeeding layouts and putting it through a fitness evaluation function. The 
+succeeding states are then ordered from best to worst. Since we know which two keys are swapped to achieve
+each succeeding state, we are able to go down the line of most to least effective swaps, and making said swaps
+if the key has not already been swapped at this iteration. The algorithm only does this with succeeding states that have a better
+fitness evaluation than the current state. As a result, we make as many swaps possible that will improve the performance
+of the layout in the fitness function.
+
+The algorithm was designed this way to reduce the socratic element of genetic search and shorten the number
+of generations needed to find the absolute best keyboard. The algorithm terminates knowing the best keyboard
+relative to the dataset and configuration - this is guaranteed as there is not existing swap that will improve
+the fitness metric at termination.
 
 # <img src="docs/images/download.png" alt="Download Icon" height="32" id="installation"> Installation
 
@@ -97,7 +117,7 @@ Again, the program is able to read multiple zip archives that may contain other 
 ### Included Datasets
 - **books** - Thanks to [Project Guntenberg](https://www.gutenberg.org/), this dataset contains around 300 free books.
 - **brown** - This dataset contains a portion of the Brown English Corpus.
-- **code** - This dataset contains the entire source code of the KBMSTR project.
+- **KBMSTR_code** - This dataset contains the entire source code of the KBMSTR project.
 - **shakespeare** - This dataset contains ever work of William Shakespeare.
 
 ## Creating a config
@@ -208,9 +228,8 @@ most people are taught to type on a keyboard.
 <br>
 
 A quick overview of running KBMSTR.py:
-
-
-    python3 KBMSTR.py [-h] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-gen_size SIZE] [-mutation_rate RATE] [-epsilon EPSILON] [-steps_to_converge STEPS] [-save_stats] [-analyze] [-display] keyboard config
+  
+    python3 KBMSTR.py [-h] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-save_stats] [-analyze] [-display] keyboard config
 
 ### Positional Arguments
 These arguments are required for every use of KBMSTR.py
@@ -252,33 +271,6 @@ containing the keyboard, and the generation statistic graph is the [save_stats](
 argument is present. The default is the time and day the program terminates.
 This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
 
-#### gen_size
-The value of this argument is an Integer that will become the size of each generation. You may notice that at each generation, the status bar 
-indicates a smaller number of keyboards than the selected generation size. This is OK - all this means is that there were 
-duplicate layouts when the new generation was created - we don't need to calculate the fitness of the same layout twice! 
-However, duplicate layouts are not linted across generations (Too many possible layouts!). The value is defaulted to 2500.
-This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
-
-#### mutation_rate
-The value of this argument is a Float representation of what percentage of keys will be swapped when new
-keyboard layouts are being generated for fitness calculation. If set to 1.0, each generation will be completely random.
-This should be a value greater than 0.0 to preserve generational diversity. The default is 0.1. This argument
-is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
-
-#### epsilon
-The value of this argument is a Float representing the threshold in which to call no change between generations. If the change
-between the last generation and the current generation is less than this value, the program will increment 
-the step number to indicate convergence. Also see (steps_to_converge)[#steps_to_converge]. The default is
-0.0, this is mostly here if one wishes for the program to complete quicker by not caring about small improvements.
-This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
-
-#### steps_to_converge
-This argument is an Integer representing the number of steps needed in a row for the program
-to deem convergence. For each generation, if the change in efficiency is less than the [epsilion values](#epsilon),
-the program takes a step. Once the number of steps is equal to this value, the program considers the current
-best keyboard as the absolute best keyboard. Steps are reset to 0 if the change between generations is greater
-than epsilon. The default value is 10. This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
-
 #### save_stats
 The presence of this flag tells the program to keep track of the best efficiency of each generation in order
 to create a visual representation of efficiency as the keyboard layouts evolve. There is no value for this flag.
@@ -304,10 +296,13 @@ as defined in keyboard and config.
 - **DVORAK** - A much less common, but still standard keyboard developed in 1932.
 - **KBMSTR HuntPeck** - two flavors included (remain/return).
   - Remain: The best keyboard layout for using the HuntPeck method of typing without returning fingers to home keys after each stroke.
-  - Return: The best keyboard layput for using the HuntPeck method of typing with returning fingers to home keys after each stroke.
+  - Return: The best keyboard layout for using the HuntPeck method of typing with returning fingers to home keys after each stroke.
 - **KBMSTR Standard** - two flavors included (remain/return)
   - Remain: The best keyboard layout for using the Standard method of typing without returning fingers to home keys after each stroke.
-  - Return: The best keyboard layput for using the Standard method of typing with returning fingers to home keys after each stroke.
+  - Return: The best keyboard layout for using the Standard method of typing with returning fingers to home keys after each stroke.
+- **Noah's Coding Keyboard** - two flavors included (remain/return)
+  - Remain: The best keyboard layout for using the Standard method of typing without returning fingers to home keys after each stroke.
+  - Return: The best keyboard layout for using the Standard method of typing with returning fingers to home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
 By visiting [The Official KBMSTR Website](https://www.kbmstr.com), a user will be able to practice their typing both on the keyboard
