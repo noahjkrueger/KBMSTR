@@ -224,12 +224,11 @@ most people are taught to type on a keyboard.
 **Computation Time Note:** If it is taking to long to find a keyboard layout, try a combination of the following (with most effecitve first):
 - Change the ['return_to_home'](#the-return_to_home-flag) flag to 'False' in your configuration.
 - Use a smaller dataset to generate the keyboard.
-- Increase the value of the [char_checkpoint](#char_checkpoint) optional argument
 <br>
 
 A quick overview of running KBMSTR.py:
   
-    python3 KBMSTR.py [-h] [-dataset DATASET] [-char_checkpoint SIZE] [-name NAME] [-save_stats] [-analyze] [-display] keyboard config
+    python3 KBMSTR.py [-h] [-dataset DATASET] [-name NAME] [-save_stats] [-analyze] [-display] keyboard config
 
 ### Positional Arguments
 These arguments are required for every use of KBMSTR.py
@@ -253,17 +252,6 @@ This argument is an optional argument only because of another argument, [display
 It is required for analyzing or generating a keyboard layout. The value for this argument
 is a path the the directory that houses the datasets to use. This argument is ignored if
 the [display](#display) argument is present.
-
-#### char_checkpoint
-This argument is an Integer representation of how many characters the program should iterate through
-when calculating the fitness of any one keyboard. When this threshold is met, the accumulated cost so
-far is checked against the accumulated cost of the best keyboard at this point. If it is greater than
-the best keyboard cost at this point, the calculation of the keyboard is stopped as we heuristically
-consider this keyboard worse than the best. This often saves computation time, but can lead to 
-potentially discarding a better keyboard if the value is too low. The larger the dataset, 
-the larger this number should be. This value is defaulted to 100,000. This argument is ignored
-if the [return_to_home](#the-return_to_home-flag) in the configuration is set to True, or if
-the [display](#display) or [analyze](#analyze) arguments are present.
 
 #### name
 The value of this argument is a string and will be the name of the keyboard outputted, the file

@@ -113,10 +113,6 @@ class AnalyzeKeyboards:
         self.__config = Config(path_to_config)
         self.__dataset = Dataset(path_to_dataset, valid_chars, self.__config.alt_keys)
         self.__kb_costs = dict()
-        if char_checkpoint == math.inf:
-            char_checkpoint = self.__dataset.num_valid
-        self.__distance_limits = [(char_checkpoint * (i + 1), math.inf) for i in
-                              range(0, self.__dataset.num_valid // char_checkpoint)]
 
     def get_num_valid_chars(self):
         return self.__dataset.num_valid
@@ -153,16 +149,13 @@ class AnalyzeKeyboards:
                 cost += self.__config.cost_matrix[(transition[1], transition[0])] * count * 2
         out_queue.put((kb, cost))
 
-    def _analyze_thread_remain(self, kb, out_queue, get_check=False):
+    def _analyze_thread_remain(self, kb, out_queue):
         mapping = dict()
         i = 0
         for key in kb:
             mapping[key] = i
             i += 1
         cost = 0
-        chk = 0
-        count = 0
-        checkpoints = list()
         finger_pos = self.__config.original_finger_position
         for char in self.__dataset.data_inorder:
             try:
@@ -176,17 +169,6 @@ class AnalyzeKeyboards:
             except KeyError:
                 cost += self.__config.cost_matrix[(transition[1], transition[0])]
             finger_pos[responsible_finger] = destination
-            if chk < len(self.__distance_limits) and count >= self.__distance_limits[chk][0]:
-                if cost > self.__distance_limits[chk][1]:
-                    cost = math.inf
-                    break
-                elif get_check:
-                    checkpoints.append((self.__distance_limits[chk][0], cost))
-                chk += 1
-            count += 1
-        if get_check:
-            return checkpoints
-        elif out_queue is not None:
             out_queue.put((kb, cost))
 
     def _listener(self, q):
@@ -228,9 +210,6 @@ class AnalyzeKeyboards:
                 self.__kb_costs[res[0]] = res[1]
             x += max
         proc.join()
-        if not self.__config.return_to_home:
-            best = self.get_ordered_results()[0][0]
-            self.__distance_limits = self._analyze_thread_remain(best, None, get_check=True)
         cls()
 
     def get_ordered_results(self):
@@ -238,8 +217,8 @@ class AnalyzeKeyboards:
 
 
 class GeneticKeyboards:
-    def __init__(self, valid_chars, path_to_dataset, path_to_config, char_checkpoint, save_stats):
-        self.__judge = AnalyzeKeyboards(path_to_dataset, path_to_config, valid_chars, char_checkpoint)
+    def __init__(self, valid_chars, path_to_dataset, path_to_config, save_stats):
+        self.__judge = AnalyzeKeyboards(path_to_dataset, path_to_config, valid_chars)
         self.__original = valid_chars
         self.__save_stats = save_stats
         self.__stats_best = []
@@ -374,15 +353,6 @@ def main(args):
              "Directories of multiple .zip collections are allowed."
     )
     parser.add_argument(
-        "-char_checkpoint",
-        metavar="SIZE",
-        type=int,
-        default=100000,
-        help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
-             "greater than the last best total distance at every [char_checkpoint] number of "
-             "characters. Ignored if the loaded config has return_to_home flag set True."
-    )
-    parser.add_argument(
         "-name",
         metavar="NAME",
         type=str,
@@ -431,7 +401,7 @@ def main(args):
             dump(kb_json, json_file)
         exit()
 
-    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config, args.char_checkpoint, args.save_stats)
+    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config, args.save_stats)
     result = generator.generate()
     if args.save_stats:
         plt.title(f"Efficiency by Generation ({args.name if args.name else result['last_analysis']})")
@@ -447,7 +417,6 @@ def main(args):
     print(f"Finished running KBMSTR with args:\n\n\t"
           f"keyboard={args.keyboard}\n\t"
           f"dataset={args.dataset}\n\t"
-          f"char_checkpoint={args.char_checkpoint}\n\t"
           f"name={args.name}\n\t"
           f"save_stats={args.save_stats}\n\t"
           f"analyze={args.analyze}\n\t"
