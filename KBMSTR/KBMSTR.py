@@ -280,7 +280,7 @@ class GeneticKeyboards:
                                (self.__best_cost - new_gen[self.__current_layout]["cost"])
                                / self.__judge.get_num_valid_chars())
             self.__best_cost = new_gen[self.__current_layout]["cost"]
-            if self.__delta == 0:
+            if self.__delta <= 0:
                 break
             if self.__save_stats:
                 self.__stats_best.append(self.__best_cost / self.__judge.get_num_valid_chars())
