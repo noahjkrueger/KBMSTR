@@ -261,6 +261,7 @@ class GeneticKeyboards:
             self.__best_cost = new_gen[self.__current_layout]["cost"]
             if self.__save_stats:
                 self.__stats_best.append(self.__best_cost / self.__judge.get_num_valid_chars())
+            self.__gen_number += 1
             if self.__delta <= 0:
                 break
             not_swapped = [True for x in range(0, len(self.__original))]
@@ -277,7 +278,6 @@ class GeneticKeyboards:
                     next_layout[i] = next_layout[j]
                     next_layout[j] = tmp
             self.__current_layout = "".join(next_layout)
-            self.__gen_number += 1
         return self._get_result()
 
     def _get_result(self):
