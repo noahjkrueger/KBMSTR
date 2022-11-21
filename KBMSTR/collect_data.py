@@ -13,7 +13,7 @@ class Logger:
         self.__captured = list()
         self.__prog = tqdm(total=FILE_CHAR_LIM)
         self.__num_files = 0
-        self.__dir_name = f"KBMSTR-TEMP-{''.join(choices(ascii_lowercase.join(ascii_uppercase).join(digits), k=16))}"
+        self.__dir_name = f"KBMSTR-DATA-{''.join(choices(ascii_lowercase.join(ascii_uppercase).join(digits), k=16))}"
         print("Generated 0 files. Press (CTRL-C) to stop capture. Progress to next file:")
 
     def start(self):

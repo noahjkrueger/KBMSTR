@@ -82,7 +82,7 @@ export function generate_kb(element, onclick, sp_att, og_layout, kb_layout, alt_
 }
 function size () {
     for (let kb of document.querySelectorAll('.keyboard')) {
-        var size = kb.parentNode.clientWidth / 79;
+        var size = kb.parentNode.clientWidth / 70;
         kb.style.fontSize = size + 'px';
     }
 } 

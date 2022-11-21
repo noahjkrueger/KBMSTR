@@ -87,43 +87,79 @@ body {
 }
 
 .content-config {
-    background-color: #373F51;
+    background-color: #507DBC;
 }
 
 .content-config-bg {
-    background-color: #E07A5F;
+    background-color: #2EC4B6;
 }
 
 .content-generate {
-    background-color: #E07A5F;
+    background-color: #2EC4B6;
 }
 
 .content-generate-bg {
-    background-color: #9F86C0;
+    background-color: #B75D69;
+}
+
+.content-generate-wrapper {
+    font-size: 0.75vw;
+    background-color: #f8f8f8;
+    text-align: left;
+    color: #000;
+    width: 90vw;
+    margin: auto;
+    margin-top: 3vh;
+    border-radius: 1em;
+    padding: 2vw;
+    line-height: 2vh;
+}
+
+.content-generate-wrapper h1 {
+    margin-bottom: 2vh;
+}
+
+.content-generate-wrapper h2 {
+    font-size: 0.75vw;
+    line-height: 2.5    vh;
+}
+.content-generate-wrapper code {
+    display: block;
+    margin-left: 1vw;
+    line-height: 3vh;
+}
+
+.content-generate-wrapper ol {
+    margin-left: 1vw;
+    font-size: 0.9vw;
+    margin-top: 1vh;
+}
+
+.content-generate-wrapper ol li {
+    margin-bottom: 1vh;
+}
+
+.content-generate-wrapper ol ul {
+    line-height: 1.5vh;
+    margin-left: 3vw;
+    font-size: 0.75vw;
+    list-style-type: square;
 }
 
 .content-landing {
-    background-color: #1B1B1E;
+    background-color: #272932;
 }
 
 .content-landing-bg {
-    background-color: #373F51;
-}
-
-.content-misc {
-    background-color: #88A096;
-}
-
-.content-misc-bg {
-    background-color: #1B1B1E;
+    background-color: #507DBC;
 }
 
 .content-practice {
-    background-color: #9F86C0;
+    background-color: #B75D69;
 }
 
 .content-practice-bg {
-    background-color: #88A096;
+    background-color: #272932;
 }
 
 .custom {
@@ -225,13 +261,9 @@ body {
     background-color: #f8f8f8;
     border-radius: 1em;
     padding: 1%;
-    width: 70vw;
+    width: 80vw;
     margin: auto;
     margin-bottom: 2vh;
-}
-
-#keyboard-practice {
-    width: 70vw;
 }
 
 .keyboard-wrapper {
@@ -324,12 +356,20 @@ body {
     overflow: visible;
     position: relative;
     z-index: 1;
-    width: 50vw;
     text-align: center;
-    margin: auto;
+    margin-left: 94vw;
     display: flex;
     opacity: 0;
     animation: fade-in 1s 1s 1 forwards;
+}
+
+.landing-nav a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.landing-nav i {
+    font-size: 1vw;
 }
 
 .landing-nav-item {

@@ -18,17 +18,8 @@
                     
                     <div class="hamburger-content content-landing" active>
                         <nav class="landing-nav">
-                            <div class="landing-nav-item" navigation="config">
-                                Create Configuration
-                            </div>
-                            <div class="landing-nav-item" navigation="generate">
-                                Generate Keyboards
-                            </div>
-                            <div class="landing-nav-item" navigation="practice">
-                                Practice Layouts
-                            </div>
-                            <div class="landing-nav-item" navigation="misc">
-                                Miscellaneous
+                            <div class="landing-nav-item">
+                                <a href="https://github.com/noahjkrueger/KBMSTR" target="_blank"><i class="fa-brands fa-github"></i></a>
                             </div>
                         </nav>
                         <div class="hamburger-tag">
@@ -147,8 +138,67 @@
                 </div>
                 <div class="hamburger-item content-generate-bg">
                     <div class="hamburger-content content-generate">
-                        <div>
-                            instructions
+                        <div class="content-generate-wrapper">
+                            <h1>Generating a Personalized Keyboard</h1>
+                            <h2>Sorry, you are going to have to do this manually. Server computation is expensive. Python3 is required. <a href="https://www.python.org/downloads/">Install the latest version of python here.</a></h2>
+                            <h2>
+                                For advanced options, instructions and premade datasets,
+                                <a href="https://github.com/noahjkrueger/KBMSTR">visit the official KBMSTR repository.</a>
+                            </h2>
+                            <ol>
+                                <li>Download the <a href="./data/toolset/KMSTR_toolset.zip">KBMSTR toolset</a> and unzip the contents. Place the configuration made in the last section in toolset directory.</li>
+                                <li>In terminal, navigate to toolset directory and install the required libraries:
+                                    <code>pip install -r requirements.txt</code>
+                                </li>
+                                <li>Before generating a keyboard, you will need some data. We recommend using the keylogging tool to produce data 
+                                    as you use your keyboard normally. This will produce very personalized data and furtermore a more personalized
+                                    keyboard. 
+                                    <ul>
+                                        <li>
+                                            Start the data collection tool in the terminal:
+                                            <code>
+                                                python3 collect_data.py
+                                            </code>
+                                        </li>
+                                        <li>
+                                            The program will produce and pack the collected data into a a format suited for the generaiton tool.
+                                            The data is collected as you use the keyboard normally. 
+                                        </li>
+                                        <li>
+                                            We recommend collecting a million characters.
+                                            Once you collect enough data, stop the data collection by pressing <kb>CTRL</kb> + <kb>C</kb> on the terminal.
+                                        </li>
+                                        <li>
+                                            The program will terminate and produce a directory named KBMSTR-DATA-(string of chars) that contains your data.
+                                            You are able to start and stop this program as you please.
+                                        </li>
+                                        <li>
+                                            Using this tools collects everything you type, hence being called a keylogger. Do not share this data with anyone
+                                            as it can contain sensative and personal information. We recoomend deleting this data after the generation is done.
+                                        </li>
+                                        <li>    
+                                            Alternatively, you can provide data in different ways - read more on the 
+                                            <a href="https://github.com/noahjkrueger/KBMSTR#getting-a-dataset">KBMSTR repository</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Now, you have everything to produce your personalized keyboard! Run the generation tool:
+                                    <code>
+                                        python3 KBMSTR.py keyboards/generic.json my_config.json -dataset /dataset_path 
+                                    </code>
+                                    <ul>
+                                        <li>The program will start the genetic alrogithm to find the best keyboard layout relative to your configuration and dataset.</li>
+                                        <li>If generation is taking too long, read up on 
+                                            <a href="https://github.com/noahjkrueger/KBMSTR#generating-the-keyboard">
+                                            advanced generation options.</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    When the program terminates, your generated keyboard will be saved in the /keyboards directory.
+                                    You are able to practice your new layout in the practice section!
+                                </li>
+                            </ol>
                         </div>
                         <div class="hamburger-tag" id="generate">
                             <i class="fa-solid fa-hammer"></i>Generate
@@ -211,23 +261,7 @@
                             <i class="fa-solid fa-brain"></i> Practice
                         </div>
                     </div>
-                </div>
-                <div class="hamburger-item content-misc-bg">
-                    <div class="hamburger-content content-misc">
-                        <div>
-                            github
-                        </div>
-                        <div>
-                            donate
-                        </div>
-                        <div>
-                            other
-                        </div>
-                        <div class="hamburger-tag" id="misc">
-                            <i class="fa-solid fa-ghost"></i> Misc
-                        </div>
-                    </div>
-                </div>
+                </div>  
             </div>
         </main>
     </body>
