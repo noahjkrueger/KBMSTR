@@ -109,7 +109,7 @@ class Dataset:
 
 
 class AnalyzeKeyboards:
-    def __init__(self, path_to_dataset, path_to_config, valid_chars, char_checkpoint):
+    def __init__(self, path_to_dataset, path_to_config, valid_chars):
         self.__config = Config(path_to_config)
         self.__dataset = Dataset(path_to_dataset, valid_chars, self.__config.alt_keys)
         self.__kb_costs = dict()
