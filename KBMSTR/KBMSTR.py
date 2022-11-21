@@ -236,8 +236,6 @@ class GeneticKeyboards:
 
     def generate(self):
         while True:
-            if self.__delta <= 0:
-                break
             new_gen = dict()
             for i in range(0, len(self.__original)):
                 for j in range(i, len(self.__original)):
@@ -263,6 +261,8 @@ class GeneticKeyboards:
             self.__best_cost = new_gen[self.__current_layout]["cost"]
             if self.__save_stats:
                 self.__stats_best.append(self.__best_cost / self.__judge.get_num_valid_chars())
+            if self.__delta <= 0:
+                break
             not_swapped = [True for x in range(0, len(self.__original))]
             next_layout = list(self.__current_layout)
             for k, v in results:
