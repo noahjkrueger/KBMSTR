@@ -169,7 +169,7 @@ class AnalyzeKeyboards:
             except KeyError:
                 cost += self.__config.cost_matrix[(transition[1], transition[0])]
             finger_pos[responsible_finger] = destination
-            out_queue.put((kb, cost))
+        out_queue.put((kb, cost))
 
     def _listener(self, q):
         pbar = tqdm(total=len(self.__kb_costs.keys()))
