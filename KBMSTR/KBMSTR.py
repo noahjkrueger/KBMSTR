@@ -7,7 +7,6 @@ import math
 
 from sys import argv
 from json import load, dump
-from random import sample, random, getrandbits, randint
 from zipfile import ZipFile
 from datetime import datetime
 from tqdm import tqdm
@@ -239,135 +238,85 @@ class AnalyzeKeyboards:
 
 
 class GeneticKeyboards:
-    def __init__(self, valid_chars, path_to_dataset, char_checkpoint, path_to_config, gen_size,
-                 epsilon, steps_to_converge, mutation_rate, save_stats):
+    def __init__(self, valid_chars, path_to_dataset, path_to_config, char_checkpoint, save_stats):
+        self.__judge = AnalyzeKeyboards(path_to_dataset, path_to_config, valid_chars, char_checkpoint)
         self.__original = valid_chars
-        self.__mutate_rate = mutation_rate
         self.__save_stats = save_stats
         self.__stats_best = []
-        self.__gen_size = gen_size
-        self.__epsilon = epsilon
-        self.__steps_to_converge = steps_to_converge
-
         self.__delta = math.inf
-        self.__num_steps = 0
+        self.__current_layout = valid_chars
+        self.__best_cost = math.inf
+        self.__delta = math.inf
         self.__gen_number = 0
-
-        self.__current_gen = [valid_chars]
-        while len(self.__current_gen) < gen_size:
-            new_kb = ''.join(sample(valid_chars, len(valid_chars)))
-            self.__current_gen.append(new_kb)
-
-        self.__judge = AnalyzeKeyboards(path_to_dataset, path_to_config, valid_chars, char_checkpoint)
-        self.__best_kb_cost_pair = ("", math.inf)
-        print("Calculating Fitness for Generation 0 (This may take a long time - depending on dataset size and "
-              "generation size)")
-        self._calculate_fitness()
-        self.__gen_number = 1
 
     def _print_status(self):
         print(f"---------------------GENERATION {self.__gen_number:>4}\n"
-              f"Best Efficiency:{self.__best_kb_cost_pair[1] / self.__judge.get_num_valid_chars():>20}\n"
+              f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>20}\n"
               f"Δ:{self.__delta:>34}\n"
-              f"ε:{self.__epsilon:>34}\n"
-              f"Steps:{self.__num_steps:>27}/{self.__steps_to_converge}\n"
-              f"Generation Size: {self.__gen_size:>19}\n"
-              f"Mutation Rate:{self.__mutate_rate:>22}\n\n")
-    
+              f"{self.__current_layout}")
+
     def generate(self):
-        while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
+        while True:
+            new_gen = dict()
+            for i in range(0, len(self.__original)):
+                for j in range(i, len(self.__original)):
+                    copy = list(self.__current_layout)
+                    tmp = copy[i]
+                    copy[i] = copy[j]
+                    copy[j] = tmp
+                    copy_str = "".join(copy)
+                    new_gen[copy_str] = {
+                        "i": i,
+                        "j": j,
+                        "cost": math.inf
+                    }
+            self.__judge.update_keyboards(new_gen.keys())
             self._print_status()
-            new_gen = [self.__best_kb_cost_pair[0]]
-            current_results = self.__judge.get_ordered_results()
-            while len(new_gen) < self.__gen_size:
-                # !!!! See comment over self._crossover_mutate
-
-                # parent_1 = current_results[0][0]
-                # parent_2 = current_results[randint(1, int(math.sqrt(self.__gen_size)))][0]
-                # new_kb = self._crossover_mutate(parent_1, parent_2)
-                # new_gen.append(new_kb)
-
-                # !!!! Remove the line below if you use the code segment above
-                new_gen.append(self._mutate(list(current_results[0][0])))
-            self.__current_gen = new_gen
-            self._calculate_fitness()
+            self.__judge.preform_analysis()
+            results = self.__judge.get_ordered_results()
+            for k, v in results:
+                new_gen[k]["cost"] = v
+            self.__delta = min(new_gen[self.__current_layout]["cost"] / self.__judge.get_num_valid_chars(),
+                               (self.__best_cost - new_gen[self.__current_layout]["cost"])
+                               / self.__judge.get_num_valid_chars())
+            self.__best_cost = new_gen[self.__current_layout]["cost"]
+            if self.__delta == 0:
+                break
+            if self.__save_stats:
+                self.__stats_best.append(self.__best_cost / self.__judge.get_num_valid_chars())
+            not_swapped = [True for x in range(0, len(self.__original))]
+            next_layout = list(self.__current_layout)
+            for k, v in results:
+                if v > self.__best_cost:
+                    break
+                i = new_gen[k]["i"]
+                j = new_gen[k]["j"]
+                if not_swapped[i] and not_swapped[j]:
+                    not_swapped[i] = False
+                    not_swapped[j] = False
+                    tmp = next_layout[i]
+                    next_layout[i] = next_layout[j]
+                    next_layout[j] = tmp
+            self.__current_layout = "".join(next_layout)
             self.__gen_number += 1
+        return self._get_result()
+
+    def _get_result(self):
         if self.__save_stats:
             plt.plot([i for i in range(0, self.__gen_number)], self.__stats_best, label='Raw')
             plt.text(0, self.__stats_best[0],
-                     f"Best:{self.__best_kb_cost_pair[1] / self.__judge.get_num_valid_chars():>3f}, "
-                     f"ε:{self.__epsilon}, "
-                     f"Steps:{self.__num_steps}, "
-                     f"Gen Size: {self.__gen_size}, "
-                     f"Mutation Rate:{self.__mutate_rate}",
+                     f"Best:{self.__best_cost / self.__judge.get_num_valid_chars():>3f}",
                      fontsize=8,
                      bbox={"facecolor": "white", "pad": 2})
         return {
-            'layout': self.__best_kb_cost_pair[0],
-            'total_distance': self.__best_kb_cost_pair[1],
+            'layout': self.__current_layout,
+            'total_distance': self.__best_cost,
             'valid_chars': self.__judge.get_num_valid_chars(),
             'invalid_chars': self.__judge.get_num_invalid_chars(),
-            'efficiency': self.__best_kb_cost_pair[1] / self.__judge.get_num_valid_chars(),
+            'efficiency': self.__best_cost / self.__judge.get_num_valid_chars(),
             'dataset_names': self.__judge.get_filenames(),
             'last_analysis': datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         }
-
-    def _mutate(self, kb):
-        length = len(kb)
-        mutated = [False for x in range(0, length)]
-        for i in range(0, length // 2):
-            if random() <= self.__mutate_rate:
-                i1, i2 = 0, 0
-                while i1 == i2 or mutated[i1] or mutated[i2]:
-                    i1, i2 = randint(0, length - 1), randint(0, length - 1)
-                mutated[i1] = True
-                mutated[i2] = True
-                tmp = kb[i1]
-                kb[i1] = kb[i2]
-                kb[i2] = tmp
-        return "".join(kb)
-
-    # I found that just mutating the best keyboard gets better results, so this is not used.
-    # might be useful another time.
-    def _crossover_mutate(self, parent_a, parent_b):
-        length = len(self.__original)
-        used = set()
-        child = ["" for x in range(0, length)]
-        section_start = randint(0, length)
-        section_end = randint(section_start, length)
-        for i in range(section_start, section_end):
-            child[i] = parent_a[i]
-            used.add(parent_a[i])
-        while section_start < length:
-            section_end = section_start
-            while bool(getrandbits(1)) and section_end < length:
-                section_end += 1
-            for i in range(section_start, section_end):
-                child[i] = parent_a[i]
-                used.add(parent_a[i])
-            section_start = 2 * section_end - section_start
-        for i in range(0, length):
-            if child[i] == "":
-                for c in parent_b:
-                    if c not in used:
-                        child[i] = c
-                        used.add(c)
-                        break
-        return "".join(child)
-
-    def _calculate_fitness(self):
-        self.__judge.update_keyboards(self.__current_gen)
-        self.__judge.preform_analysis()
-        current_top_preform = self.__best_kb_cost_pair[1] / self.__judge.get_num_valid_chars()
-        self.__best_kb_cost_pair = self.__judge.get_ordered_results()[0]
-        top_preform = self.__best_kb_cost_pair[1] / self.__judge.get_num_valid_chars()
-        self.__delta = min(abs(current_top_preform - top_preform), top_preform)
-        if self.__delta <= self.__epsilon:
-            self.__num_steps += 1
-        else:
-            self.__num_steps = 0
-        if self.__save_stats:
-            self.__stats_best.append(top_preform)
 
 
 def show_keyboards(keyboard, path_to_config):
@@ -442,34 +391,6 @@ def main(args):
              "naming scheme: yyyy/mm/dd:hh:mm:ss.raw"
     )
     parser.add_argument(
-        "-gen_size",
-        metavar="SIZE",
-        type=int,
-        default=2500,
-        help="Chose the number of members for each generation. (Default: 2500)"
-    )
-    parser.add_argument(
-        "-mutation_rate",
-        metavar="RATE",
-        type=float,
-        default=0.1,
-        help="Change the rate at which mutations occur. (Default: 0.1) "
-    )
-    parser.add_argument(
-        "-epsilon",
-        metavar="EPSILON",
-        type=float,
-        default=0.0,
-        help="Change the threshold of convergence. (Default: 0.0)"
-    )
-    parser.add_argument(
-        "-steps_to_converge",
-        metavar="STEPS",
-        type=int,
-        default=5,
-        help="Change the threshold of convergence. (Default: 0.005)"
-    )
-    parser.add_argument(
         "-save_stats",
         action="store_true",
         help="Create a visual plot for the generation statistic in /run_stats."
@@ -510,8 +431,7 @@ def main(args):
             dump(kb_json, json_file)
         exit()
 
-    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.char_checkpoint, args.config, args.gen_size,
-                                 args.epsilon, args.steps_to_converge, args.mutation_rate, args.save_stats)
+    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config, args.char_checkpoint, args.save_stats)
     result = generator.generate()
     if args.save_stats:
         plt.title(f"Efficiency by Generation ({args.name if args.name else result['last_analysis']})")
@@ -529,10 +449,6 @@ def main(args):
           f"dataset={args.dataset}\n\t"
           f"char_checkpoint={args.char_checkpoint}\n\t"
           f"name={args.name}\n\t"
-          f"gen_size={args.gen_size}\n\t"
-          f"mutation_rate={args.mutation_rate}\n\t"
-          f"epsilon={args.epsilon}\n\t"
-          f"steps_to_converge={args.steps_to_converge}\n\t"
           f"save_stats={args.save_stats}\n\t"
           f"analyze={args.analyze}\n\t"
           f"display={args.display}\n")
