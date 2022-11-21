@@ -217,11 +217,9 @@ class AnalyzeKeyboards:
 
 
 class GeneticKeyboards:
-    def __init__(self, valid_chars, path_to_dataset, path_to_config, save_stats):
+    def __init__(self, valid_chars, path_to_dataset, path_to_config):
         self.__judge = AnalyzeKeyboards(path_to_dataset, path_to_config, valid_chars)
         self.__original = valid_chars
-        self.__save_stats = save_stats
-        self.__stats_best = []
         self.__delta = math.inf
         self.__current_layout = valid_chars
         self.__best_cost = math.inf
@@ -231,8 +229,7 @@ class GeneticKeyboards:
     def _print_status(self):
         print(f"---------------------GENERATION {self.__gen_number:>4}\n"
               f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>20}\n"
-              f"Δ:{self.__delta:>34}\n"
-              f"{self.__current_layout}")
+              f"Δ:{self.__delta:>34}\n")
 
     def generate(self):
         while True:
@@ -259,8 +256,6 @@ class GeneticKeyboards:
                                (self.__best_cost - new_gen[self.__current_layout]["cost"])
                                / self.__judge.get_num_valid_chars())
             self.__best_cost = new_gen[self.__current_layout]["cost"]
-            if self.__save_stats:
-                self.__stats_best.append(self.__best_cost / self.__judge.get_num_valid_chars())
             self.__gen_number += 1
             if self.__delta <= 0:
                 break
@@ -281,12 +276,6 @@ class GeneticKeyboards:
         return self._get_result()
 
     def _get_result(self):
-        if self.__save_stats:
-            plt.plot([i for i in range(0, self.__gen_number)], self.__stats_best, label='Raw')
-            plt.text(0, self.__stats_best[0],
-                     f"Best:{self.__best_cost / self.__judge.get_num_valid_chars():>3f}",
-                     fontsize=8,
-                     bbox={"facecolor": "white", "pad": 2})
         return {
             'layout': self.__current_layout,
             'total_distance': self.__best_cost,
@@ -361,11 +350,6 @@ def main(args):
              "naming scheme: yyyy/mm/dd:hh:mm:ss.raw"
     )
     parser.add_argument(
-        "-save_stats",
-        action="store_true",
-        help="Create a visual plot for the generation statistic in /run_stats."
-    )
-    parser.add_argument(
         "-analyze",
         action="store_true",
         help="Analyze the efficiency of the inputted keyboard against dataset(s) provided in -dataset and places "
@@ -387,7 +371,7 @@ def main(args):
     if not args.dataset:
         raise Exception("A dataset is required for this action.")
     if args.analyze:
-        analysis = AnalyzeKeyboards(args.dataset, args.config, kb_json['layout'], math.inf)
+        analysis = AnalyzeKeyboards(args.dataset, args.config, kb_json['layout'])
         analysis.update_keyboards([kb_json['layout']])
         analysis.preform_analysis()
         result = analysis.get_ordered_results()[0]
@@ -401,7 +385,7 @@ def main(args):
             dump(kb_json, json_file)
         exit()
 
-    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config, args.save_stats)
+    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config)
     result = generator.generate()
     if args.save_stats:
         plt.title(f"Efficiency by Generation ({args.name if args.name else result['last_analysis']})")
