@@ -257,8 +257,8 @@ the [display](#display) argument is present.
 #### char_checkpoint
 This argument is an Integer representation of how many characters the program should iterate through
 when calculating the fitness of any one keyboard. When this threshold is met, the accumulated cost so
-far is checked agianst the accumulated cost of the best keyboard at this point. If it is greater than a 
-small margin of the best keyboard, the calculation of the keyboard is stopped as we heuristically
+far is checked against the accumulated cost of the best keyboard at this point. If it is greater than
+the best keyboard cost at this point, the calculation of the keyboard is stopped as we heuristically
 consider this keyboard worse than the best. This often saves computation time, but can lead to 
 potentially discarding a better keyboard if the value is too low. The larger the dataset, 
 the larger this number should be. This value is defaulted to 100,000. This argument is ignored

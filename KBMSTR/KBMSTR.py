@@ -181,7 +181,7 @@ class AnalyzeKeyboards:
                     cost = math.inf
                     break
                 elif get_check:
-                    checkpoints.append((1.01 * self.__distance_limits[chk][0], cost))
+                    checkpoints.append((self.__distance_limits[chk][0], cost))
                 chk += 1
             count += 1
         if get_check:
@@ -379,7 +379,7 @@ def main(args):
         type=int,
         default=100000,
         help="Create character checkpoints for large datasets. For each keyboard, disregard if the total distance is "
-             "greater (within small margin) than the last best total distance at every [char_checkpoint] number of "
+             "greater than the last best total distance at every [char_checkpoint] number of "
              "characters. Ignored if the loaded config has return_to_home flag set True."
     )
     parser.add_argument(
