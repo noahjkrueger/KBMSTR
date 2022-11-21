@@ -273,7 +273,7 @@ class GeneticKeyboards:
               f"Steps:{self.__num_steps:>27}/{self.__steps_to_converge}\n"
               f"Generation Size: {self.__gen_size:>19}\n"
               f"Mutation Rate:{self.__mutate_rate:>22}\n\n")
-
+    
     def generate(self):
         while self.__delta > self.__epsilon or self.__steps_to_converge != self.__num_steps:
             self._print_status()
