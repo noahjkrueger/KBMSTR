@@ -387,13 +387,6 @@ def main(args):
 
     generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config)
     result = generator.generate()
-    if args.save_stats:
-        plt.title(f"Efficiency by Generation ({args.name if args.name else result['last_analysis']})")
-        plt.xlabel("Generation Number")
-        plt.ylabel("Distance/Keystroke")
-        plt.legend()
-        plt.grid()
-        plt.savefig(f"run_stats/{args.name if args.name else result['last_analysis']}.genstats.png")
     with open(f"keyboards/{args.name if args.name else result['last_analysis']}.json", "w") as json_file:
         result['name'] = f"keyboards/{args.name if args.name else result['last_analysis']}"
         dump(result, json_file)
@@ -402,7 +395,6 @@ def main(args):
           f"keyboard={args.keyboard}\n\t"
           f"dataset={args.dataset}\n\t"
           f"name={args.name}\n\t"
-          f"save_stats={args.save_stats}\n\t"
           f"analyze={args.analyze}\n\t"
           f"display={args.display}\n")
 
