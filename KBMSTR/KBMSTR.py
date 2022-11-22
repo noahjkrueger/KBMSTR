@@ -263,6 +263,8 @@ class GeneticKeyboards:
                     break
                 else:
                     step = True
+            else:
+                step = False
             not_swapped = [True for x in range(0, len(self.__original))]
             next_layout = list(self.__current_layout)
             for k, v in results:
