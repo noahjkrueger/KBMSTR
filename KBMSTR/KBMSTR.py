@@ -2,7 +2,6 @@ import argparse
 import eel
 import os
 import multiprocessing as mp
-import matplotlib.pyplot as plt
 import math
 
 from sys import argv
@@ -10,7 +9,7 @@ from json import load, dump
 from zipfile import ZipFile
 from datetime import datetime
 from tqdm import tqdm
-
+from random import shuffle
 
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -225,18 +224,25 @@ class GeneticKeyboards:
         self.__best_cost = math.inf
         self.__delta = math.inf
         self.__gen_number = 0
+        self.__steps = 0
 
     def _print_status(self):
         print(f"---------------------GENERATION {self.__gen_number:>4}\n"
               f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>20}\n"
-              f"Δ:{self.__delta:>34}\n")
+              f"Δ:{self.__delta:>34}\n"
+              f"{f'Checking local maxima:          {self.__steps}/10' if self.__steps > 0 else ''}\n")
 
     def generate(self):
-        step = False
         while True:
-            new_gen = dict()
+            new_gen = {
+                self.__current_layout: {
+                    "i": 0,
+                    "j": 0,
+                    "cost": math.inf
+                }
+            }
             for i in range(0, len(self.__original)):
-                for j in range(i, len(self.__original)):
+                for j in range(i + 1, len(self.__original)):
                     copy = list(self.__current_layout)
                     tmp = copy[i]
                     copy[i] = copy[j]
@@ -258,18 +264,22 @@ class GeneticKeyboards:
                                / self.__judge.get_num_valid_chars())
             self.__best_cost = new_gen[self.__current_layout]["cost"]
             self.__gen_number += 1
-            if self.__delta <= 0:
-                if step:
-                    break
-                else:
-                    step = True
+            if self.__delta <= 0 and self.__steps == 9:
+                break
+            elif self.__delta <= 0:
+                self.__steps += 1
             else:
-                step = False
+                self.__steps = 0
             not_swapped = [True for x in range(0, len(self.__original))]
             next_layout = list(self.__current_layout)
+            do = list()
             for k, v in results:
-                if v > self.__best_cost:
+                if v >= self.__best_cost:
                     break
+                else:
+                    do.append(k)
+            shuffle(do)
+            for k in do:
                 i = new_gen[k]["i"]
                 j = new_gen[k]["j"]
                 if not_swapped[i] and not_swapped[j]:
