@@ -224,13 +224,13 @@ class GeneticKeyboards:
         self.__best_cost = math.inf
         self.__delta = math.inf
         self.__gen_number = 0
-        self.__steps = 0
+        self.__breaker = False
 
     def _print_status(self):
         print(f"---------------------GENERATION {self.__gen_number:>4}\n"
               f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>20}\n"
               f"Δ:{self.__delta:>34}\n"
-              f"{f'Checking local maxima:          {self.__steps}/10' if self.__steps > 0 else ''}\n")
+              f"{f'Breaking local maxima....' if self.__breaker > 0 else ''}\n")
 
     def generate(self):
         while True:
@@ -264,12 +264,12 @@ class GeneticKeyboards:
                                / self.__judge.get_num_valid_chars())
             self.__best_cost = new_gen[self.__current_layout]["cost"]
             self.__gen_number += 1
-            if self.__delta <= 0 and self.__steps == 9:
+            if self.__delta <= 0 and self.__breaker:
                 break
             elif self.__delta <= 0:
-                self.__steps += 1
+                self.__breaker = True
             else:
-                self.__steps = 0
+                self.__breaker = False
             not_swapped = [True for x in range(0, len(self.__original))]
             next_layout = list(self.__current_layout)
             do = list()
