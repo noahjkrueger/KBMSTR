@@ -228,7 +228,7 @@ most people are taught to type on a keyboard.
 
 A quick overview of running KBMSTR.py:
   
-    python3 KBMSTR.py [-h] [-dataset DATASET] [-name NAME] [-save_stats] [-analyze] [-display] keyboard config
+    python3 KBMSTR.py [-h] [-dataset DATASET] [-breaker_lim LIMIT] [-name NAME] [-analyze] [-display] keyboard config
 
 ### Positional Arguments
 These arguments are required for every use of KBMSTR.py
@@ -253,20 +253,16 @@ It is required for analyzing or generating a keyboard layout. The value for this
 is a path the the directory that houses the datasets to use. This argument is ignored if
 the [display](#display) argument is present.
 
+#### breaker_lim
+This argument is an optional argument that helps the algorithm break out of local maximums. 
+The default is 3. This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+
+
 #### name
 The value of this argument is a string and will be the name of the keyboard outputted, the file
 containing the keyboard, and the generation statistic graph is the [save_stats](#save_stats)
 argument is present. The default is the time and day the program terminates.
 This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
-
-#### save_stats
-The presence of this flag tells the program to keep track of the best efficiency of each generation in order
-to create a visual representation of efficiency as the keyboard layouts evolve. There is no value for this flag.
-When the program terminates, the created image will be saved to:
-
-    /run_stats/
-with the name indicated in the [name argument](#name). The default value is 10. This argument is ignored if the
-[display](#display) or [analyze](#analyze) arguments are present.
 
 #### analyze
 The presence of this argument ignores everything except the [dataset argument](#dataset), the [keyboard argument](#keyboard)
