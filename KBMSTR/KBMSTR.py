@@ -11,6 +11,7 @@ from datetime import datetime
 from tqdm import tqdm
 from random import shuffle
 
+
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -216,31 +217,42 @@ class AnalyzeKeyboards:
 
 
 class GeneticKeyboards:
-    def __init__(self, valid_chars, path_to_dataset, path_to_config):
+    def __init__(self, valid_chars, breaker_lim, path_to_dataset, path_to_config):
         self.__judge = AnalyzeKeyboards(path_to_dataset, path_to_config, valid_chars)
         self.__original = valid_chars
         self.__delta = math.inf
         self.__current_layout = valid_chars
+        self.__best_layout = valid_chars
         self.__best_cost = math.inf
         self.__delta = math.inf
         self.__gen_number = 0
-        self.__breaker = False
+        self.__breaker = 0
+        self.__breaker_lim = breaker_lim
 
     def _print_status(self):
-        print(f"---------------------GENERATION {self.__gen_number:>4}\n"
-              f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>20}\n"
-              f"Δ:{self.__delta:>34}\n"
-              f"{f'Breaking local maxima....' if self.__breaker > 0 else ''}\n")
+        print(f"-----------------------------------------------------GENERATION {self.__gen_number:>3}\n"
+              f"Best Layout:{self.__best_layout:>55}\n"
+              f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>51}\n"
+              f"Δ:{self.__delta:>65}\n"
+              f"{f'Breaking local maxima.... {self.__breaker}/{self.__breaker_lim}' if self.__breaker > 0 else ''}\n")
 
     def generate(self):
         while True:
-            new_gen = {
-                self.__current_layout: {
-                    "i": 0,
-                    "j": 0,
-                    "cost": math.inf
-                }
-            }
+            self.__judge.update_keyboards([self.__current_layout])
+            self.__judge.preform_analysis()
+            result = self.__judge.get_ordered_results()[0]
+            self.__delta = min(result[1] / self.__judge.get_num_valid_chars(),
+                               (self.__best_cost - result[1]) / self.__judge.get_num_valid_chars())
+            if self.__delta > 0:
+                self.__best_cost = result[1]
+                self.__best_layout = self.__current_layout
+                self.__breaker = 0
+            elif self.__breaker >= self.__breaker_lim:
+                break
+            else:
+                self.__breaker += 1
+            self._print_status()
+            new_gen = dict()
             for i in range(0, len(self.__original)):
                 for j in range(i + 1, len(self.__original)):
                     copy = list(self.__current_layout)
@@ -254,22 +266,10 @@ class GeneticKeyboards:
                         "cost": math.inf
                     }
             self.__judge.update_keyboards(new_gen.keys())
-            self._print_status()
             self.__judge.preform_analysis()
             results = self.__judge.get_ordered_results()
             for k, v in results:
                 new_gen[k]["cost"] = v
-            self.__delta = min(new_gen[self.__current_layout]["cost"] / self.__judge.get_num_valid_chars(),
-                               (self.__best_cost - new_gen[self.__current_layout]["cost"])
-                               / self.__judge.get_num_valid_chars())
-            self.__best_cost = new_gen[self.__current_layout]["cost"]
-            self.__gen_number += 1
-            if self.__delta <= 0 and self.__breaker:
-                break
-            elif self.__delta <= 0:
-                self.__breaker = True
-            else:
-                self.__breaker = False
             not_swapped = [True for x in range(0, len(self.__original))]
             next_layout = list(self.__current_layout)
             do = list()
@@ -288,12 +288,13 @@ class GeneticKeyboards:
                     tmp = next_layout[i]
                     next_layout[i] = next_layout[j]
                     next_layout[j] = tmp
+            self.__gen_number += 1
             self.__current_layout = "".join(next_layout)
         return self._get_result()
 
     def _get_result(self):
         return {
-            'layout': self.__current_layout,
+            'layout': self.__best_layout,
             'total_distance': self.__best_cost,
             'valid_chars': self.__judge.get_num_valid_chars(),
             'invalid_chars': self.__judge.get_num_invalid_chars(),
@@ -358,6 +359,14 @@ def main(args):
              "Directories of multiple .zip collections are allowed."
     )
     parser.add_argument(
+        "-breaker_lim",
+        metavar="LIMIT",
+        type=int,
+        default=3,
+        help="Number of times the change (delta) between generations is 0 before convergence. This  helps to break"
+             "local maximums. Default is 3."
+    )
+    parser.add_argument(
         "-name",
         metavar="NAME",
         type=str,
@@ -401,7 +410,7 @@ def main(args):
             dump(kb_json, json_file)
         exit()
 
-    generator = GeneticKeyboards(kb_json['layout'], args.dataset, args.config)
+    generator = GeneticKeyboards(kb_json['layout'], args.breaker_lim, args.dataset, args.config)
     result = generator.generate()
     with open(f"keyboards/{args.name if args.name else result['last_analysis']}.json", "w") as json_file:
         result['name'] = f"keyboards/{args.name if args.name else result['last_analysis']}"
