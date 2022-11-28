@@ -237,8 +237,8 @@ class GeneticKeyboards:
               f"Best Layout:{self.__best_layout:>55}\n"
               f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>51}\n"
               f"Δ:{self.__delta:>65}\n"
-              f"{f'Breaking local maxima.... {self.__breaker}/{self.__breaker_lim}' if self.__breaker > 0 else ''}"
-              f"\n{f'Current Layout: {self.__current_layout:>52}' if self.__breaker > 0 else ''}")
+              f"{f'Current Layout: {self.__current_layout:>52}' if self.__breaker > 0 else ''}\n"
+              f"{f'Breaking local maxima.... {self.__breaker}/{self.__breaker_lim}' if self.__breaker > 0 else ''}\n")
 
     def generate(self):
         while True:

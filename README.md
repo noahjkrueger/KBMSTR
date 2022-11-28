@@ -33,17 +33,15 @@ and generates (# chars in layout)^2 / 2 succeeding layouts. Each one of these la
 2 keys of the current best layout. The current iteration of the algorithm only knows its adjacent states, hence the 
 local search aspect. If we consider the set of succeeding states as the population of the current generation, then
 we can look for the best aspects in the generation and use them to make a new generation - hence the genetic aspect. This is done by
-first looking at each one of the succeeding layouts and putting it through a fitness evaluation function. The 
-succeeding states are then ordered from best to worst. Since we know which two keys are swapped to achieve
-each succeeding state, we are able to go down the line of most to least effective swaps, and making said swaps
-if the key has not already been swapped at this iteration. The algorithm only does this with succeeding states that have a better
+first looking at each one of the succeeding layouts and putting it through a fitness evaluation function. Since we know which two keys are swapped to achieve
+each succeeding state, we are able to find swaps that improve efficiency, and making said swaps
+if the key has not already been swapped at this iteration. The algorithm only does this with succeeding states that have the same or better
 fitness evaluation than the current state. As a result, we make as many swaps possible that will improve the performance
 of the layout in the fitness function.
 
-The algorithm was designed this way to reduce the socratic element of genetic search and shorten the number
+The algorithm was designed this way to reduce the socratic element of a genetic algorithm and shorten the number
 of generations needed to find the absolute best keyboard. The algorithm terminates knowing the best keyboard
-relative to the dataset and configuration - this is guaranteed as there is not existing swap that will improve
-the fitness metric at termination.
+relative to the dataset and configuration.
 
 # <img src="docs/images/download.png" alt="Download Icon" height="32" id="installation"> Installation
 
@@ -277,17 +275,17 @@ and the [config argument](#config). The program will start a new window displayi
 as defined in keyboard and config.
 
 # <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
-- **QWERTY** - Standard QWERTY keyboard
+- **QWERTY** - Standard QWERTY keyboard developed in the 1870s.
 - **DVORAK** - A much less common, but still standard keyboard developed in 1932.
 - **KBMSTR HuntPeck** - two flavors included (remain/return).
-  - Remain: The best keyboard layout for using the HuntPeck method of typing without returning fingers to home keys after each stroke.
-  - Return: The best keyboard layout for using the HuntPeck method of typing with returning fingers to home keys after each stroke.
+  - Remain: ~30.25% efficiency increase compared to QWERTY and ~26.5% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while keeping fingers on keys after each keystroke.
+  - Return: ~35.5%% efficiency increase compared to QWERTY and ~23% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while returning fingers home after each keystroke.
 - **KBMSTR Standard** - two flavors included (remain/return)
-  - Remain: The best keyboard layout for using the Standard method of typing without returning fingers to home keys after each stroke.
-  - Return: The best keyboard layout for using the Standard method of typing with returning fingers to home keys after each stroke.
+  - Remain:  ~27% efficiency increase compared to QWERTY and ~9% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while keeping fingers on keys after each keystroke.
+  - Return: ~55.5%% efficiency increase compared to QWERTY and ~17% Efficiency increase compared to Dvorak on the brown dataset using the Standard configuration while returning fingers home after each keystroke.
 - **Noah's Coding Keyboard** - two flavors included (remain/return)
-  - Remain: The best keyboard layout for using the Standard method of typing without returning fingers to home keys after each stroke.
-  - Return: The best keyboard layout for using the Standard method of typing with returning fingers to home keys after each stroke.
+  - Remain: The best keyboard layout for using the Noah's method of typing without returning fingers to home keys after each stroke.
+  - Return: The best keyboard layout for using the Noah's method of typing with returning fingers to home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
 By visiting [The Official KBMSTR Website](https://www.kbmstr.com), a user will be able to practice their typing both on the keyboard
