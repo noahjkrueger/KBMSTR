@@ -233,5 +233,36 @@ function typeinBox(key, practice_data, typed) {
     correct.innerText = cor;
     incorrect.innerText = typed.substring(x, typed.length);
     document.getElementById("wpm").innerText = "WPM: " + String((typed.length / (5.0 * ((getTime() - stated_typing) / 60000))).toFixed(2));
+
+    const next = practice_data.substring(typed.length, typed.length + 1);
+    const high = document.querySelectorAll('[highlighted]');
+    for (let k of high) {
+        k.toggleAttribute("highlighted");
+    }
+    if (x != typed.length) {
+        document.querySelector('[practice-key][key_name="Backspace"]').toggleAttribute("highlighted");
+    }
+    else {    
+        if (next === " ") {
+            document.querySelector('[practice-key][key_name=" "]').toggleAttribute("highlighted");
+        }
+        else {
+            var k = null;
+            if (next === '"') {
+                k = document.querySelector('[practice-key][key_char*=\'\"\']');
+            } else {
+                k = document.querySelector('[practice-key][key_char*="' + next + '"]');
+            }
+            if (!k) {
+                return typed;
+            }
+            else if (k.getAttribute("key_map")[1] === next) {
+                for (let k2 of document.querySelectorAll('[practice-key][key_name="Shift"]')) {
+                    k2.toggleAttribute("highlighted");
+                }
+            }
+            k.toggleAttribute("highlighted");
+        }
+    }
     return typed;
 }

@@ -321,11 +321,16 @@ body {
 
 .keyrow > div[data-pressed],
 .keyrow > div:active {
-    background: #000000;
-    color: #f8f8f8;
     position: relative;
     top: 0.2em;
     box-shadow: none;
+}
+
+.keyrow > div[highlighted],
+.keyrow > div:active {
+    background: #000000;
+    color: #f8f8f8;
+    transform: scale(1.1);
 }
 
 .kw1 {
