@@ -213,7 +213,6 @@ class AnalyzeKeyboards:
                 self.__kb_costs[res[0]] = res[1]
             x += max
         proc.join()
-        cls()
 
     def get_ordered_results(self):
         return [(k, v) for k, v in sorted(self.__kb_costs.items(), key=lambda x: x[1])]
@@ -238,10 +237,11 @@ class GeneticKeyboards:
               f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>51}\n"
               f"Δ:{self.__delta:>65}\n"
               f"{f'Breaking local maxima.... {self.__breaker}/{self.__breaker_lim}' if self.__breaker > 0 else ''}"
-              f"\n {f'Current Layout: {self.__current_layout:>51}' if self.__breaker > 0 else ''}")
+              f"\n{f'Current Layout: {self.__current_layout:>52}' if self.__breaker > 0 else ''}")
 
     def generate(self):
         while True:
+            cls()
             print('Judging current layout...')
             self.__judge.update_keyboards([self.__current_layout])
             self.__judge.preform_analysis()
