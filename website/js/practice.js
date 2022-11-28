@@ -250,7 +250,11 @@ function typeinBox(key, practice_data, typed) {
             var k = null;
             if (next === '"') {
                 k = document.querySelector('[practice-key][key_char*=\'\"\']');
-            } else {
+            } 
+            else if (next === "\\") {
+                k = document.querySelector('[practice-key][key_char*="\\"]');
+            }
+            else {
                 k = document.querySelector('[practice-key][key_char*="' + next + '"]');
             }
             if (!k) {

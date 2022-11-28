@@ -104,29 +104,37 @@ body {
 
 .content-generate-wrapper {
     font-size: 0.75vw;
-    background-color: #f8f8f8;
+    background-color: #f8f8f8ef;
     text-align: left;
     color: #000;
     width: 90vw;
+    height: 80%;
     margin: auto;
     margin-top: 3vh;
     border-radius: 1em;
     padding: 2vw;
-    line-height: 2vh;
+    line-height: 3vh;
 }
 
 .content-generate-wrapper h1 {
-    margin-bottom: 2vh;
+    font-size: 2vw;
+    margin-bottom: 1vh;
 }
 
 .content-generate-wrapper h2 {
-    font-size: 0.75vw;
-    line-height: 2.5    vh;
+    font-size: 0.65vw;
+    line-height: 1.5vh;
 }
+
 .content-generate-wrapper code {
     display: block;
+    padding-left: 1vh;
+    padding-right: 1vh;
+    border-radius: 0.5em;
     margin-left: 1vw;
     line-height: 3vh;
+    background-color: #fff;
+    width: max-content;
 }
 
 .content-generate-wrapper ol {
@@ -135,8 +143,12 @@ body {
     margin-top: 1vh;
 }
 
-.content-generate-wrapper ol li {
+.content-generate-wrapper ol li, ul li {
     margin-bottom: 1vh;
+}
+
+.content-generate-wrapper code {
+    margin-top: 1vh;
 }
 
 .content-generate-wrapper ol ul {
@@ -261,13 +273,13 @@ body {
     background-color: #f8f8f8;
     border-radius: 1em;
     padding: 1%;
-    width: 80vw;
+    width: 75vw;
     margin: auto;
     margin-bottom: 2vh;
 }
 
 .keyboard-wrapper {
-    margin-top: 4vh;
+    margin-top: 2vh;
     margin-bottom: 2vh;
 }
 
@@ -290,6 +302,7 @@ body {
 }
 
 .keyrow > * {
+    font-size: 100%;
     position: relative;
     text-align: center;
     color: #000;
@@ -310,8 +323,7 @@ body {
     box-shadow: 0 0.15em 0 0.0em #000000;
 }
 
-.keyrow > div[caps-on],
-.keyrow > div:active {
+.keyrow > div[caps-on]{
     background: #000000;
     color: #f8f8f8;
     position: relative;
@@ -319,18 +331,15 @@ body {
     box-shadow: none;
 }
 
-.keyrow > div[data-pressed],
-.keyrow > div:active {
+.keyrow > div[data-pressed] {
     position: relative;
     top: 0.2em;
     box-shadow: none;
 }
 
-.keyrow > div[highlighted],
-.keyrow > div:active {
+.keyrow > div[highlighted] {
     background: #000000;
     color: #f8f8f8;
-    transform: scale(1.1);
 }
 
 .kw1 {
@@ -496,7 +505,6 @@ body {
     word-wrap: break-word;
     border-radius: 1em;
     margin: auto;
-    margin-bottom: 1vh;
     display: flex;
     background-color: #f8f8f8;
     font-size: 200%;
@@ -594,7 +602,7 @@ body {
 
 .practice-tools-upload::file-selector-button:hover {
     color: #f8f8f8;
-    background-color: #E07A5F;
+    background-color: #000;
 }
 
 .preset {
