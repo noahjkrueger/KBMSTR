@@ -44,9 +44,9 @@ class Config:
                 continue
             for key_b, finger_b in self.finger_duty.items():
                 if finger_a == finger_b:
-                    self.cost_matrix[(key_a, key_b)] = self.calc_distance(key_a, key_b)
+                    self.cost_matrix[(key_a, key_b)] = self.__calc_distance(key_a, key_b)
 
-    def calc_distance(self, key_a, key_b):
+    def __calc_distance(self, key_a, key_b):
         pt_a = self.__map_key_to_pt(key_a)
         pt_b = self.__map_key_to_pt(key_b)
         return math.sqrt(math.pow(pt_a[0] - pt_b[0], 2) + math.pow(pt_a[1] - pt_b[1], 2))
@@ -122,6 +122,9 @@ class AnalyzeKeyboards:
 
     def get_filenames(self):
         return self.__dataset.filenames
+
+    def get_typing_type(self):
+        return self.__config.return_to_home
 
     def update_keyboards(self, keyboards):
         self.__kb_costs = dict()
@@ -227,17 +230,19 @@ class GeneticKeyboards:
         self.__delta = math.inf
         self.__gen_number = 0
         self.__breaker = 0
-        self.__breaker_lim = breaker_lim
+        self.__breaker_lim = breaker_lim if not self.__judge.get_typing_type() else 0
 
     def _print_status(self):
         print(f"-----------------------------------------------------GENERATION {self.__gen_number:>3}\n"
               f"Best Layout:{self.__best_layout:>55}\n"
               f"Best Efficiency:{self.__best_cost/self.__judge.get_num_valid_chars():>51}\n"
               f"Δ:{self.__delta:>65}\n"
-              f"{f'Breaking local maxima.... {self.__breaker}/{self.__breaker_lim}' if self.__breaker > 0 else ''}\n")
+              f"{f'Breaking local maxima.... {self.__breaker}/{self.__breaker_lim}' if self.__breaker > 0 else ''}"
+              f"\n {f'Current Layout: {self.__current_layout:>51}' if self.__breaker > 0 else ''}")
 
     def generate(self):
         while True:
+            print('Judging current layout...')
             self.__judge.update_keyboards([self.__current_layout])
             self.__judge.preform_analysis()
             result = self.__judge.get_ordered_results()[0]
@@ -362,9 +367,9 @@ def main(args):
         "-breaker_lim",
         metavar="LIMIT",
         type=int,
-        default=3,
+        default=5,
         help="Number of times the change (delta) between generations is 0 before convergence. This  helps to break"
-             "local maximums. Default is 3."
+             "local maximums. Default is 5."
     )
     parser.add_argument(
         "-name",

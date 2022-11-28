@@ -255,7 +255,8 @@ the [display](#display) argument is present.
 
 #### breaker_lim
 This argument is an optional argument that helps the algorithm break out of local maximums. 
-The default is 3. This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
+The default is 5. This is only used when the [return_to_home](#return_to_home) flag in the
+configuration is set to False. This argument is ignored if the [display](#display) or [analyze](#analyze) arguments are present.
 
 
 #### name
