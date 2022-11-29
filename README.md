@@ -220,7 +220,7 @@ most people are taught to type on a keyboard.
 **Assumption:** The distance to type _SPACE_ key is 0. This holds true in most cases.
 
 **Computation Time Note:** If it is taking to long to find a keyboard layout, try a combination of the following (with most effecitve first):
-- Change the ['return_to_home'](#the-return_to_home-flag) flag to 'False' in your configuration.
+- Change the ['return_to_home'](#the-return_to_home-flag) flag to 'True' in your configuration.
 - Use a smaller dataset to generate the keyboard.
 <br>
 
@@ -279,10 +279,10 @@ as defined in keyboard and config.
 - **DVORAK** - A much less common, but still standard keyboard developed in 1932.
 - **KBMSTR HuntPeck** - two flavors included (remain/return).
   - Remain: ~30.25% efficiency increase compared to QWERTY and ~26.5% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while keeping fingers on keys after each keystroke.
-  - Return: ~35.5%% efficiency increase compared to QWERTY and ~23% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while returning fingers home after each keystroke.
+  - Return: ~35.5% efficiency increase compared to QWERTY and ~23% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while returning fingers home after each keystroke.
 - **KBMSTR Standard** - two flavors included (remain/return)
   - Remain:  ~27% efficiency increase compared to QWERTY and ~9% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while keeping fingers on keys after each keystroke.
-  - Return: ~55.5%% efficiency increase compared to QWERTY and ~17% Efficiency increase compared to Dvorak on the brown dataset using the Standard configuration while returning fingers home after each keystroke.
+  - Return: ~55.5% efficiency increase compared to QWERTY and ~17% Efficiency increase compared to Dvorak on the brown dataset using the Standard configuration while returning fingers home after each keystroke.
 - **Noah's Coding Keyboard** - two flavors included (remain/return)
   - Remain: The best keyboard layout for using the Noah's method of typing without returning fingers to home keys after each stroke.
   - Return: The best keyboard layout for using the Noah's method of typing with returning fingers to home keys after each stroke.

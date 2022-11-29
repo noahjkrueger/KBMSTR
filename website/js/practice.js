@@ -204,7 +204,7 @@ function typeinBox(key, practice_data, typed) {
     if (input === 'Backspace') {
         if (typed.length > 0) {
             typed = typed.substring(0, typed.length - 1);
-            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 0.7) + "vw";
+            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 0.9) + "vw";
         }
         else {
             new_off = cur_off
@@ -212,7 +212,7 @@ function typeinBox(key, practice_data, typed) {
     }
     else {
         typed += input;
-        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 0.7) + "vw";
+        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 0.9) + "vw";
     }
     document.documentElement.style.setProperty("--practice-offset", new_off);
     var cor = "";
@@ -260,7 +260,7 @@ function typeinBox(key, practice_data, typed) {
             if (!k) {
                 return typed;
             }
-            else if (k.getAttribute("key_map")[1] === next) {
+            else if (k.getAttribute("key_char")[1] === next) {
                 for (let k2 of document.querySelectorAll('[practice-key][key_name="Shift"]')) {
                     k2.toggleAttribute("highlighted");
                 }
