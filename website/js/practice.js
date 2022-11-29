@@ -49,7 +49,7 @@ async function newExercise() {
     document.getElementById("practice-exercise-correct").innerText = "";
     document.getElementById("practice-exercise-incorrect").innerText = "";
     document.getElementById("practice-exercise-upcoming").innerText = praccy;
-    document.documentElement.style.setProperty('--practice-offset', "25vw");
+    document.documentElement.style.setProperty('--practice-offset', "50%");
 }
 
 async function reload(type) {
@@ -204,7 +204,7 @@ function typeinBox(key, practice_data, typed) {
     if (input === 'Backspace') {
         if (typed.length > 0) {
             typed = typed.substring(0, typed.length - 1);
-            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 0.9) + "vw";
+            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 1) + "%";
         }
         else {
             new_off = cur_off
@@ -212,7 +212,7 @@ function typeinBox(key, practice_data, typed) {
     }
     else {
         typed += input;
-        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 0.9) + "vw";
+        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 1) + "%";
     }
     document.documentElement.style.setProperty("--practice-offset", new_off);
     var cor = "";

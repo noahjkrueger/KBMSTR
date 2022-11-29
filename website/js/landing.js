@@ -19,7 +19,7 @@ async function type(element) {
 
 export async function initSite() {
     const sections = document.getElementsByClassName("hamburger-content");
-    const active_height = 100 - (3 * (sections.length - 1)) - sections.length / 2;
+    const active_height = 100 - (3 * (sections.length - 1));
     var animation_in_motion = false;
     document.documentElement.style.setProperty('--active-height', active_height.toString() + "vh");
     for (let section of sections) {
