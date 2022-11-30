@@ -78,15 +78,4 @@ export function generate_kb(element, onclick, sp_att, og_layout, kb_layout, alt_
     create_keys(37, kb_layout.length, keyrow_4);
     create_named_key("Shift", "kw3", keyrow_4);
     create_named_key(" ", "kw4", keyrow_5);
-    size();
 }
-function size () {
-    for (let kb of document.querySelectorAll('.keyboard')) {
-        var size = kb.parentNode.clientWidth / 12;
-        kb.style.fontSize = size + '%';
-    }
-} 
-
-window.addEventListener('resize', function (e) {
-    size();
-});
