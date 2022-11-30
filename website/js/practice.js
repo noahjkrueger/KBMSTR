@@ -224,7 +224,6 @@ function typeinBox(key, practice_data, typed) {
     const delta_margin = 5.0 * parseFloat(prac_font_w.substring(0, prac_font_w.length - 2)) / 8.3;
     const cur_off = document.documentElement.style.getPropertyValue("--practice-offset");
     const cur_off_w = parseFloat(cur_off.substring(0, cur_off.length - 2));
-    console.log(delta_margin);
     var new_off = null;
     if (input === 'Backspace') {
         if (typed.length > 0) {
