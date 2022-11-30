@@ -18,7 +18,6 @@ export async function initPractice() {
     document.getElementsByClassName("practice-exercise-upcoming")[0].innerText = praccy;
     document.body.addEventListener('keydown', function (e) {
         var key = getKey(e);
-        console.log(key);
         if (!key) {
             return console.warn('No key for', e.keyCode);
         }
@@ -50,7 +49,9 @@ async function newExercise() {
     document.getElementById("practice-exercise-correct").innerText = "";
     document.getElementById("practice-exercise-incorrect").innerText = "";
     document.getElementById("practice-exercise-upcoming").innerText = praccy;
-    document.documentElement.style.setProperty('--practice-offset', "50%");
+    const w = document.getElementById("practice-exercise-typing").clientWidth;
+    document.documentElement.style.setProperty('--practice-font', String(w / 40) + "px");
+    document.documentElement.style.setProperty('--practice-offset', String(w / 2) + "px");
 }
 
 async function reload(type) {
@@ -219,20 +220,24 @@ function typeinBox(key, practice_data, typed) {
             input = key.getAttribute('key_char')[0];
         }
     }
+    const prac_font_w =  document.documentElement.style.getPropertyValue("--practice-font");
+    const delta_margin = 5.0 * parseFloat(prac_font_w.substring(0, prac_font_w.length - 2)) / 8.3;
     const cur_off = document.documentElement.style.getPropertyValue("--practice-offset");
+    const cur_off_w = parseFloat(cur_off.substring(0, cur_off.length - 2));
+    console.log(delta_margin);
     var new_off = null;
     if (input === 'Backspace') {
         if (typed.length > 0) {
             typed = typed.substring(0, typed.length - 1);
-            new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) + 1) + "%";
+            new_off = String(cur_off_w + delta_margin) + "px";
         }
         else {
-            new_off = cur_off
+            new_off = String(cur_off_w) + "px";
         }
     }
     else {
         typed += input;
-        new_off = String(parseFloat(cur_off.substring(0, cur_off.length)) - 1) + "%";
+        new_off = String(cur_off_w - delta_margin) + "px";
     }
     document.documentElement.style.setProperty("--practice-offset", new_off);
     var cor = "";
@@ -253,7 +258,6 @@ function typeinBox(key, practice_data, typed) {
     correct.innerText = cor;
     incorrect.innerText = typed.substring(x, typed.length);
     document.getElementById("wpm").innerText = "WPM: " + String((typed.length / (5.0 * ((getTime() - stated_typing) / 60000))).toFixed(2));
-
     const next = practice_data.substring(typed.length, typed.length + 1);
     const high = document.querySelectorAll('[highlighted]');
     for (let k of high) {

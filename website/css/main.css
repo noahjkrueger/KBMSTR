@@ -6,8 +6,10 @@
 :root {
 	--active-height: 0%;
 	--inactive-height: 0%;
-	--practice-offset: 50%;
+    --practice-font: 0px;
+	--practice-offset: 0px;
 	--vh: 0px;
+    --vw: 0px;
 }
 
 body {
@@ -413,7 +415,7 @@ ul li {
 
 .practice-exercise-correct {
 	color: #008000;
-	display: inline;
+	display: inline-block;
 	white-space: pre;
 	margin-left: var(--practice-offset);
 }
@@ -425,7 +427,7 @@ ul li {
 
 .practice-exercise-incorrect {
 	color: #ff0000;
-	display: inline;
+	display: inline-block;
 	background-color: pink;
 	white-space: pre;
 }
@@ -464,13 +466,14 @@ ul li {
 }
 
 .practice-exercise-typing {
+    box-sizing: border-box;
 	width: 50%;
 	word-wrap: break-word;
 	border-radius: 1em;
 	margin: auto;
 	display: flex;
 	background-color: #f8f8f8;
-	font-size: 1vw;
+	font-size: var(--practice-font);
 	line-height: 250%;
 	overflow: hidden;
 	font-family: monospace;
@@ -851,7 +854,6 @@ div[selected-finger] {
 
 	.practice-exercise-typing {
 		width: 75%;
-		font-size: 3vw;
 		line-height: 200%;
 	}
 
