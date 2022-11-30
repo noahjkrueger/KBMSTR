@@ -22,10 +22,8 @@ export async function initSite() {
     const active_height = 100 - (3 * (sections.length - 1));
     var animation_in_motion = false;
     document.documentElement.style.setProperty('--active-height', active_height.toString() + "vh");
+    document.documentElement.style.setProperty('--inactive-height', "3vh");
     for (let section of sections) {
-        if (!section.hasAttribute("active")) {
-            section.style.height = "3vh";
-        }
         section.addEventListener("click", async (e) => {
             if (section.hasAttribute("active") || animation_in_motion) {
                 return;
