@@ -21,8 +21,8 @@ export async function initSite() {
     const sections = document.getElementsByClassName("hamburger-content");
     const active_height = 100 - (3 * (sections.length - 1));
     var animation_in_motion = false;
-    document.documentElement.style.setProperty('--active-height', active_height.toString() + "vh");
-    document.documentElement.style.setProperty('--inactive-height', "3vh");
+    document.documentElement.style.setProperty('--active-height', "calc(var(--vh, 1vh) * " + active_height.toString() + ")");
+    document.documentElement.style.setProperty('--inactive-height', "calc(var(--vh, 1vh) * 3)");
     for (let section of sections) {
         section.addEventListener("click", async (e) => {
             if (section.hasAttribute("active") || animation_in_motion) {
