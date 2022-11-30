@@ -776,6 +776,15 @@ div[selected-finger] {
 		font-size: 4.5vw;
 	}
 
+    .hamburger-tag {
+        font-size: 90%;
+        line-height: 150%;
+    }
+    
+    .hamburger-tag i {
+        padding-right: 1.5%;
+    }    
+
 	.home i {
 		padding-top: 25%;
 		font-size: 3.5vw;
@@ -816,27 +825,27 @@ div[selected-finger] {
 	}
 
 	.landing-nav {
-		line-height: 300%;
+		line-height: 200%;
 		margin-left: 95%;
 	}
 
-	.landing-nav a {
-		text-decoration: none;
-		color: inherit;
-	}
-
 	.landing-nav i {
-		font-size: 350%;
+		font-size: 400%;
 	}
 
 	.practice-exercise-new {
 		border: 0.5vw solid #000;
-		font-size: 150%;
+		font-size: 75%;
 		padding: 0.5vw 0.5vw;
 	}
 
+    .practice-exercise-stats {
+        width: 75%;
+        line-height: 50%;
+    }
+
 	.practice-exercise-stats-wpm {
-		font-size: 150%;
+		font-size: 75%;
 	}
 
 	.practice-exercise-typing {
@@ -863,9 +872,7 @@ div[selected-finger] {
 	}
 
 	.practice-tools-upload {
-		color: #f8f8f8;
-		background-color: #1B1B1E;
-		border-radius: 1em;
+        width: 20%;
 	}
 
 	.practice-tools-upload::file-selector-button {
