@@ -56,6 +56,7 @@ export function generate_kb(element, onclick, sp_att, og_layout, kb_layout, alt_
 
     function create_named_key(name, size, row) {
         let k = document.createElement('div');
+        k.addEventListener('click', onclick)
         if (sp_att) {
             k.toggleAttribute(sp_att);
         }

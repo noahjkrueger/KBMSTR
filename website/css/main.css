@@ -28,7 +28,7 @@ body {
 	flex: 1;
 	border: 0.25vw solid #000000;
 	margin: 0.25vw;
-	height: calc(var(--vh, 1vh) * 3.5);
+	height: max-content;
 }
 
 .config-tools {
@@ -214,11 +214,12 @@ ul li {
 .hamburger-tag {
 	color: #f8f8f8;
 	text-align: left;
-	padding-left: 1%;
+	padding-left: 0.5%;
 	font-size: 100%;
 	font-weight: 600;
 	width: 100%;
-	line-height: 200%;
+    height: var(--inactive-height);
+	line-height: var(--inactive-height);
 	position: absolute;
 	bottom: 0;
 	background-color: inherit;
@@ -238,7 +239,7 @@ ul li {
 }
 
 .home i {
-	padding-top: 25%;
+	padding: 25%;
 	font-size: 1vw;
 }
 
@@ -696,26 +697,25 @@ div[selected-finger] {
 	}
 
 	to {
-		padding-left: 1%;
+		padding-left: 0.5%;
 	}
 }
 
 @media screen and (max-width: 1500px) and (max-height: 1500px) {
 	.config-mapping-wrapper {
 		width: 75%;
-		height: 5%;
 		margin-bottom: 5%;
 	}
 
 	.config-mapping {
 		border: 0.5vw solid #000000;
 		margin: 0.5vw;
-		height: calc(var(--vh, 1vh) * 5);
 	}
 
 	.config-tools {
-		width: 100%;
 		margin: auto;
+        width: max-content;
+        height: max-content;
 	}
 
 	.config-tools-create {
@@ -748,6 +748,7 @@ div[selected-finger] {
 		width: 90%;
 		height: 90%;
 		line-height: 100%;
+        margin-top: 1%;
 	}
 
 	.content-generate-wrapper h1 {
@@ -786,7 +787,7 @@ div[selected-finger] {
     }    
 
 	.home i {
-		padding-top: 25%;
+		padding-top: 30%;
 		font-size: 3.5vw;
 	}
 

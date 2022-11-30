@@ -18,12 +18,13 @@ export async function initPractice() {
     document.getElementsByClassName("practice-exercise-upcoming")[0].innerText = praccy;
     document.body.addEventListener('keydown', function (e) {
         var key = getKey(e);
+        console.log(key);
         if (!key) {
             return console.warn('No key for', e.keyCode);
         }
         for (let k of key){
             k.setAttribute('data-pressed', 'on');
-            current_inputted_text = typeinBox(k, praccy, current_inputted_text);
+            current_inputted_text = typeinBox(k, praccy, current_inputted_text);  
         }
     });
     document.body.addEventListener('keyup', function (e) {
@@ -107,7 +108,26 @@ async function reload(type) {
                 }
             }
         }
-        generate_kb("keyboard-practice", null, "practice-key", physical_layout, layout.layout, alt_string, config.finger_duty);
+        generate_kb("keyboard-practice", (e) => {   
+            var key = null;
+            if (e.target.innerHTML === "'" || e.target.innerHTML === "\"") {
+                key = document.querySelector("[practice-key][key_char*='\"']");
+            }
+            else if (e.target.innerHTML === "|" || e.target.innerHTML === "\\") {
+                key = document.querySelector("[practice-key][key_char*='|']");
+            }
+            else {
+                key = document.querySelector("[practice-key][key_char*='"+ e.target.innerHTML +"']");
+            }
+            if (key) {
+                document.body.dispatchEvent(new KeyboardEvent('keydown', {'key': key.getAttribute("key_map")[0]}));
+                document.body.dispatchEvent(new KeyboardEvent('keyup', {'key': key.getAttribute("key_map")[0]}));
+            }
+            else {
+                document.body.dispatchEvent(new KeyboardEvent('keydown', {'key': e.target.innerHTML}));
+                document.body.dispatchEvent(new KeyboardEvent('keyup', {'key': e.target.innerHTML}));
+            }
+        }, "practice-key", physical_layout, layout.layout, alt_string, config.finger_duty);
     }
     catch (error) {
         try {
