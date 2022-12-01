@@ -20,10 +20,8 @@ body {
 
 .config-mapping-wrapper {
 	width: 25%;
-	height: 2%;
 	margin: auto;
 	display: flex;
-	margin-bottom: 2%;
 }
 
 .config-mapping {
@@ -59,6 +57,7 @@ body {
 .config-tools-description {
 	font-size: 1.25vw;
 	color: #f8f8f8;
+	margin-bottom: 0.25%;
 }
 
 .config-tools-option {
@@ -188,6 +187,7 @@ ul li {
 
 .finger i {
 	padding-top: 15%;
+	padding-bottom: 10%;
 	font-size: 1.5vw;
 }
 
@@ -240,8 +240,9 @@ ul li {
 	border-radius: 50%;
 }
 
-.home i {
-	padding: 25%;
+.home i {	
+	padding-top: 25%;
+	padding-bottom: 25%;
 	font-size: 1vw;
 }
 
@@ -269,7 +270,7 @@ ul li {
 	padding: 1%;
 	width: 75%;
 	margin: auto;
-	margin-bottom: 2vh;
+	margin-bottom: 0.5%;
 }
 
 .keyboard-wrapper {
