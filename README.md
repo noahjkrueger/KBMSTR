@@ -15,31 +15,31 @@
 
 ## Purpose
 KBMSTER provides an array of tools for a user to find the best layout of a keyboard for their own personalized use.
-By utilizing these tools, a user is able to collect data on actual typing habits and in turn use this data to generate
-a keyboard layout to their exact needs. The goal of a generating a layout is to minimize the finger travel distance when
+By utilizing these tools, a user is able to collect data on actual typing habits and in turn, use this data to generate
+a keyboard layout to their exact needs. The goal of generating a layout is to minimize the finger travel distance when
 using a keyboard to type. The beauty of this tool is that it considers various methods of typing and furthermore
 will prove useful to anyone looking to improve their typing efficiency. The development process of a brand new keyboard
 layout, personalized to an individual, is involved, yet simple. KBMSTR works with the user to collect actual keystrokes
 from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](https://www.kbmstr.com).
 Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](https://www.kbmstr.com) to let the algorithm know
 actual typing habits, KBMSTR will then utilize these two items to employ [a unique algorithm](#the-algorithm) to find the absolute best keyboard layout
-for you. This, paired with [KBMSTR's practice tool](https://www.kbmstr.com) allow for users to dramaGtically speed up their typing speeds
+for you. This, paired with [KBMSTR's practice tool](https://www.kbmstr.com) allows users to dramatically speed up their typing speeds
 and reduce hand fatigue while using the computer.
 
 ## The Algorithm
 The KBMSTR uses a unique algorithm to find the best keyboard layout. This algorithm is best described as a cross
-between a local search and genetic algorithm. It is definitely greedy. The algorithm takes the best known layout (at the beginning, this can be anything)
+between a local search and a genetic algorithm. It is definitely greedy. The algorithm takes the best-known layout (at the beginning, this can be anything)
 and generates (# chars in layout)^2 / 2 succeeding layouts. Each one of these layouts can be achieved by swapping any
 2 keys of the current best layout. The current iteration of the algorithm only knows its adjacent states, hence the 
 local search aspect. If we consider the set of succeeding states as the population of the current generation, then
 we can look for the best aspects in the generation and use them to make a new generation - hence the genetic aspect. This is done by
 first looking at each one of the succeeding layouts and putting it through a fitness evaluation function. Since we know which two keys are swapped to achieve
-each succeeding state, we are able to find swaps that improve efficiency, and making said swaps
+each succeeding state, we are able to find swaps that improve efficiency, and make said swaps
 if the key has not already been swapped at this iteration. The algorithm only does this with succeeding states that have the same or better
-fitness evaluation than the current state. As a result, we make as many swaps possible that will improve the performance
+fitness evaluation than the current state. As a result, we make as many swaps as possible that will improve the performance
 of the layout in the fitness function.
 
-The algorithm was designed this way to reduce the socratic element of a genetic algorithm and shorten the number
+The algorithm was designed this way to reduce the random element of a genetic algorithm and shorten the number
 of generations needed to find the absolute best keyboard. The algorithm terminates knowing the best keyboard
 relative to the dataset and configuration.
 
@@ -59,14 +59,14 @@ And that's it! You are ready to start using the tools!
 # <img src="docs/images/create.png" alt="Hammer Icon" height="32" id="creating-a-keyboard"> Creating a Keyboard
 
 ## Getting a Dataset
-Generating a keyboard needs data. We recommend using collect_data.py, but you can provide the data in other ways. We reccomend
+Generating a keyboard needs data. We recommend using collect_data.py, but you can provide the data in other ways. We recommend
 a dataset with at least 1 million (1,000,000) characters, but the more the merrier[**](#generating-the-keyboard).
 
 ### Using collect_data.py
-This is probably the best way to provide the KBMSTR tool the data it needs. It is simple, non-invasive, and the most accurate
-to your use of the keyboard. We recommend creating a directory to store your data. Navigate to the /python/ directory and type the command:
+This is probably the best way to provide the KBMSTR tool with the data it needs. It is simple, non-invasive, and the most accurate
+for your use of the keyboard. Navigate to the /python/ directory and type the command:
     
-    mkdir my_data && mv collect_data.py my_data && python3 my_data/collect_data.py
+    python3 my_data/collect_data.py
 A process will start and every key you type will be recorded. **DO NOT UPLOAD THIS DATA ANYWHERE** - KBMSTR takes privacy very
 seriously. The data collected could possibly contain some sensitive information, such as _passwords_ and _personal information_.
 This data collected is intended for use in the KBMSTR genetic algorithm, and we do not send this data to _anyone_, not
@@ -90,7 +90,7 @@ compress the collection of files into a .zip archive as the generator requires t
 files to .txt format, we recommend using a tool such as [Online Convert](https://document.online-convert.com/convert-to-txt). However, 
 you will have to compress the results.
 
-A visual representation how the program reads a dataset:
+A visual representation of how the program reads a dataset:
     
     (directory as input to KBMSTR.py)
             |
@@ -116,7 +116,7 @@ Again, the program is able to read multiple zip archives that may contain other 
 - **books** - Thanks to [Project Guntenberg](https://www.gutenberg.org/), this dataset contains around 300 free books.
 - **brown** - This dataset contains a portion of the Brown English Corpus.
 - **KBMSTR_code** - This dataset contains the entire source code of the KBMSTR project.
-- **shakespeare** - This dataset contains ever work of William Shakespeare.
+- **shakespeare** - This dataset contains every work of William Shakespeare.
 
 ## Creating a config
 A configuration file is required to generate keyboards. This file defines which fingers a person uses to type which keys, 
@@ -124,11 +124,11 @@ the distances between those keys, alternate key symbols, and whether or not the 
 
 ### Using [KBMSTR Online Tool](https://www.kbmstr.com)
 By utilizing this tool, creating a config is very easy! Just select the keys that each finger is responsible for and indicate if
-you prefer to return the fingers back to the home keys or not! All of this is done with a intuitive interface; the configuration file
+you prefer to return the fingers back to the home keys or not! All of this is done with an intuitive interface; the configuration file
 is generated for you! This is the recommended method.
 
 ### Not Using KBMSTR Online Tool
-For reference while creating a configuration using this method, check out [a pre-made config](#included-configs)
+For reference, while creating a configuration using this method, check out [a pre-made config](#included-configs)
 A usable config is  a JSON file structured as:
   
     {
@@ -141,11 +141,12 @@ A usable config is  a JSON file structured as:
         ...
       }
     }
+
 #### return_to_home
-See ['The "return_to_home" Flag](#the-return_to_home-flag) for explanation. Boolean.
+See ['The "return_to_home" Flag](#the-return_to_home-flag) for an explanation. Boolean.
 
 #### alt_keys
-This data structure maps a String to String. They keys of each is the alternative input for a key (when pressing shift),
+This data structure maps a String to a String. The keys of each are the alternative input for a key (when pressing shift),
 and the values is the input of the key (not pressing shift). For example:
 
     "alt_keys": {
@@ -154,6 +155,7 @@ and the values is the input of the key (not pressing shift). For example:
         "X": "x",
         ...
       }
+
 These are usually the same for every keyboard - we have not expanded the problem to consider switching around the values
 of alternative keys for a better layout - something we hope to do in the future.
 
@@ -161,6 +163,7 @@ of alternative keys for a better layout - something we hope to do in the future.
 This data structure is an array that represents which finger is responsible or which key. The index of each value is the
 key the value is responsible for. For this to integrate with the [display](#display) argument and the [KBMSTR webapp](https://www.kbmstr.com), 
 there must be a value for each index that is one of the following:
+
 - "l_p": the left pinky finger is responsible.
 - "l_r": the left ring finger is responsible.
 - "l_m": the left middle finger is responsible.
@@ -169,13 +172,14 @@ there must be a value for each index that is one of the following:
 - "r_m": the right middle finger is responsible.
 - "r_r": the right ring finger is responsible.
 - "r_p": the right pinky finger is responsible.
+
 The length of this array must be equal to the length of the layout, i.e. a one-to-one mapping.
 
 #### original_finger_position
 This data structure represents your home keys, or where your fingers start when you start typing.
 You must have a home key for each finger contained in the [finger_duty](#finger_duty).
 
-For example, if finger_duty only contains the left and right index finger:
+For example, if finger_duty only contains the left and right index fingers:
 
     "original_finger_position": {
       "l_i": Integer,
@@ -184,18 +188,18 @@ For example, if finger_duty only contains the left and right index finger:
     }
 
 ### The "return_to_home" Flag
-This is a magical flag, deserving of its own section. It is this flag within the configuration file that changes how keyboard 
+This is a magical flag, deserving of its own section. It is this flag within the configuration file that changes how the keyboard 
 layouts are generated, both in terms of final layout and efficiency. 
 
 After the dataset is initialized, how the data is used differs with respect to the value of this flag.
 
-When this flag is set to 'True', the fitness judgement of
-each keyboard in each generation assumes that once a keystroke is completed by a finger, that finger returns to it's initial position.
+When this flag is set to 'True', the fitness judgment of
+each keyboard in each generation assumes that once a keystroke is completed by a finger, that finger returns to its initial position.
 This means that the program can calculate the fitness for a keyboard in constant time; we can simply calculate the distance from the home 
-key to the key corresponding to the character times the numer of occurrences of that character (times two, as the finger moves back to the home key).
+key to the key corresponding to the character times the number of occurrences of that character (times two, as the finger moves back to the home key).
 
 However, what if we care about the order of the keys? This is where setting this flag to 'False' comes into play.
-With this configuration, the fitness judgement of each keyboard in each generation assumes that one a key is pressed, the finger
+With this configuration, the fitness judgment of each keyboard in each generation assumes that once a key is pressed, the finger
 remains there until the same finger is needed again (i.e. the finger does not return to home). This is more accurate to how a person
 actually types, but in order to achieve this, more complex calculations are needed. As a result, we need to iterate through each
 character of the dataset for each keyboard in order to preserve the ordering of charters. This means that calculating the fitness
@@ -219,7 +223,7 @@ most people are taught to type on a keyboard.
 ## Generating the Keyboard
 **Assumption:** The distance to type _SPACE_ key is 0. This holds true in most cases.
 
-**Computation Time Note:** If it is taking to long to find a keyboard layout, try a combination of the following (with most effecitve first):
+**Computation Time Note:** If it is taking too long to find a keyboard layout, try a combination of the following (with the most effective first):
 - Change the ['return_to_home'](#the-return_to_home-flag) flag to 'True' in your configuration.
 - Use a smaller dataset to generate the keyboard.
 <br>
@@ -235,7 +239,7 @@ The value of this argument is the path to a keyboard JSON file. If you are gener
     
     keyboards/generic.json
 
-If you wish to analyze a keyboard against dataset(s) or display the keyboard, this value is the path to that keyboard.
+If you wish to analyze a keyboard against the dataset(s) or display the keyboard, this value is the path to that keyboard.
 
 #### config
 The values of this argument is the path to a [configuration file](#included-configs). This tells the program
@@ -248,7 +252,7 @@ These arguments change the behavior of KBMSTR.py
 #### dataset
 This argument is an optional argument only because of another argument, [display](#display).
 It is required for analyzing or generating a keyboard layout. The value for this argument
-is a path the the directory that houses the datasets to use. This argument is ignored if
+is a path the directory that houses the datasets to use. This argument is ignored if
 the [display](#display) argument is present.
 
 #### breaker_lim
@@ -272,7 +276,7 @@ to reflect this analysis.
 #### display
 The presence of this argument ignores everything except the [keyboard argument](#keyboard)
 and the [config argument](#config). The program will start a new window displaying a virtual keyboard
-as defined in keyboard and config.
+as defined in the keyboard and config.
 
 # <img src="docs/images/gear.png" alt="Gear Icon" height="32" id="pre-made-keyboards"> Pre-made Keyboards
 - **QWERTY** - Standard QWERTY keyboard developed in the 1870s.
@@ -284,13 +288,13 @@ as defined in keyboard and config.
   - Remain:  ~27% efficiency increase compared to QWERTY and ~9% Efficiency increase compared to Dvorak on the brown dataset using the HuntPeck configuration while keeping fingers on keys after each keystroke.
   - Return: ~55.5% efficiency increase compared to QWERTY and ~17% Efficiency increase compared to Dvorak on the brown dataset using the Standard configuration while returning fingers home after each keystroke.
 - **Noah's Coding Keyboard** - two flavors included (remain/return)
-  - Remain: The best keyboard layout for using the Noah's method of typing without returning fingers to home keys after each stroke.
-  - Return: The best keyboard layout for using the Noah's method of typing with returning fingers to home keys after each stroke.
+  - Remain: The best keyboard layout for using Noah's method of typing without returning fingers to the home keys after each stroke.
+  - Return: The best keyboard layout for using Noah's method of typing with returning fingers to the home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
 By visiting [The Official KBMSTR Website](https://www.kbmstr.com), a user will be able to practice their typing both on the keyboard
 layouts previously mentioned as well as their own personalized keyboards. Users are presented with the option to upload their
-own personalized keyboard and configuration to the website (produced by our other tools!) that will then display a virtual keyboard.
+own personalized keyboard and configuration to the website (produced by our other tools!) which will then display a virtual keyboard.
 It is here where a user is able to use their physical keyboard to practice their new keyboard, or just try out their results.
 
 Challenge yourself and improve your typing speed!
