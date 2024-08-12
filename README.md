@@ -1,7 +1,7 @@
 # <img src="docs/images/KBMSTR_logo.png" alt="KBMSTR Logo" height="64"> KBMSTR - Personalized Keyboards
 
 # <img src="docs/images/book.png" alt="Book Icon" height="32"> Table of Contents
-- **[Visit the Official Website!](https://www.kbmstr.com)**
+- **[Visit the Official Website!](https://www.kbmstr.noahnoah.net)**
 - **[Introduction](#introduction)**
 - **[Installation](#installation)**
 - **[Creating a Keyboard](#creating-a-keyboard)**
@@ -20,10 +20,10 @@ a keyboard layout to their exact needs. The goal of generating a layout is to mi
 using a keyboard to type. The beauty of this tool is that it considers various methods of typing and furthermore
 will prove useful to anyone looking to improve their typing efficiency. The development process of a brand new keyboard
 layout, personalized to an individual, is involved, yet simple. KBMSTR works with the user to collect actual keystrokes
-from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](https://www.kbmstr.com).
-Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](https://www.kbmstr.com) to let the algorithm know
+from the user in a transparent and non-invasive way by utilizing [KBMSTR's data collection tool](https://www.kbmstr.noahnoah.net).
+Once a sufficient amount of data is collected and the user utilizes [KBMSTR's configuration tool](https://www.kbmstr.noahnoah.net) to let the algorithm know
 actual typing habits, KBMSTR will then utilize these two items to employ [a unique algorithm](#the-algorithm) to find the absolute best keyboard layout
-for you. This, paired with [KBMSTR's practice tool](https://www.kbmstr.com) allows users to dramatically speed up their typing speeds
+for you. This, paired with [KBMSTR's practice tool](https://www.kbmstr.noahnoah.net) allows users to dramatically speed up their typing speeds
 and reduce hand fatigue while using the computer.
 
 ## The Algorithm
@@ -161,7 +161,7 @@ of alternative keys for a better layout - something we hope to do in the future.
 
 #### finger_duty
 This data structure is an array that represents which finger is responsible or which key. The index of each value is the
-key the value is responsible for. For this to integrate with the [display](#display) argument and the [KBMSTR webapp](https://www.kbmstr.com), 
+key the value is responsible for. For this to integrate with the [display](#display) argument and the [KBMSTR webapp](https://www.kbmstr.noahnoah.net), 
 there must be a value for each index that is one of the following:
 
 - "l_p": the left pinky finger is responsible.
@@ -292,7 +292,7 @@ as defined in the keyboard and config.
   - Return: The best keyboard layout for using Noah's method of typing with returning fingers to the home keys after each stroke.
 
 # <img src="docs/images/learn.png" alt="Student Icon" height="32" id="practice-new-keyboards"> Practice New Keyboards
-By visiting [The Official KBMSTR Website](https://www.kbmstr.com), a user will be able to practice their typing both on the keyboard
+By visiting [The Official KBMSTR Website](https://www.kbmstr.noahnoah.net), a user will be able to practice their typing both on the keyboard
 layouts previously mentioned as well as their own personalized keyboards. Users are presented with the option to upload their
 own personalized keyboard and configuration to the website (produced by our other tools!) which will then display a virtual keyboard.
 It is here where a user is able to use their physical keyboard to practice their new keyboard, or just try out their results.
